@@ -14,7 +14,7 @@
 
 ```bash
 # Clone repository
-git clone https://github.com/XLionXL/mtk.git
+git clone https://github.com/Rookie143/mtk.git
 cd mtk/vlm
 
 # Install vlm core dependencies
