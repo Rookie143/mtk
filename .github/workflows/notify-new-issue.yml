@@ -1,0 +1,37 @@
+name: Notify on new issues
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+concurrency:
+  group: notify-new-issue-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Mention Marl1ine once
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          BODY: |
+            @Marl1ine A new issue has been opened. Please take a look when you have a chance.
+
+            <!-- mtk-new-issue-notification -->
+        run: |
+          set -euo pipefail
+          existing=$(gh api --paginate "repos/$GH_REPO/issues/$ISSUE_NUMBER/comments" \
+            --jq '.[] | select(.user.login == "github-actions[bot]" and ((.body // "") | contains("<!-- mtk-new-issue-notification -->"))) | .id')
+          if [[ -n "$existing" ]]; then
+            echo "Notification already posted; skipping."
+            exit 0
+          fi
+          gh issue comment "$ISSUE_NUMBER" --repo "$GH_REPO" --body "$BODY"
