@@ -1,13 +1,13 @@
-# coding=gbk
 from IsolationForest import PyTorchIsolationForest
 import os
 import torch
 from tqdm import tqdm
 from transformers import GenerationConfig
 
+
 class JailbreakDetector:
     def __init__(self, model, tokenizer, background_layered_activations, all_labels, your_flag,
-                 n_estimators=100, random_state=42, k_nb=10):
+                 n_estimators=100, random_state=42, max_samples=512, k_nb=10):
         self.model = model
         self.tokenizer = tokenizer
         self.device = model.device
@@ -15,9 +15,9 @@ class JailbreakDetector:
         self.k_nb = k_nb
         self.background_activations_by_layer = background_layered_activations
         self.background_labels = all_labels
-        self.num_layers = len(self.background_activations_by_layer)
+        self.num_layers = self.background_activations_by_layer.shape[1]
         if os.path.exists(f"./{self.your_flag}/training_sequences.pt"):
-            training_sequences = torch.load(f"./{self.your_flag}/training_sequences.pt")
+            training_sequences = torch.load(f"./{self.your_flag}/training_sequences.pt", map_location=self.device)
         else:
             training_sequences = self._get_training_sequences()
         y_train = self.background_labels
@@ -26,57 +26,59 @@ class JailbreakDetector:
         self.mean = benign_training_sequences.mean(dim=0, keepdim=True)
         self.std = benign_training_sequences.std(dim=0, keepdim=True) + 1e-8
         X_train = (benign_training_sequences - self.mean) / self.std
-        self.if_model = PyTorchIsolationForest(n_estimators=n_estimators, max_samples=512, random_state=42)
+        self.if_model = PyTorchIsolationForest(n_estimators=n_estimators, max_samples=max_samples,
+                                               random_state=random_state)
         self.if_model.fit(X_train)
 
     def predict(self, prompt_text: str = None, input_ids: torch.Tensor = None, return_score=True, attack_key=None,
-                    return_ranks=False):
-            if input_ids is None and prompt_text is not None:
-                messages = [{"role": "user", "content": prompt_text}]
-                input_ids = self.tokenizer.apply_chat_template(
-                    messages,
-                    add_generation_prompt=True,
-                    return_tensors="pt"
-                ).to(self.device)
-            elif input_ids is not None:
-                input_ids = input_ids.to(self.device)
-                if input_ids.dim() == 1:
-                    input_ids = input_ids.unsqueeze(0)
-                if prompt_text is None:
-                    prompt_text = self.tokenizer.decode(input_ids[0], skip_special_tokens=True)
-            else:
-                raise ValueError("Either prompt_text or input_ids must be provided!")
+                return_ranks=False):
+        if input_ids is None and prompt_text is not None:
+            messages = [{"role": "user", "content": prompt_text}]
+            input_ids = self.tokenizer.apply_chat_template(
+                messages,
+                add_generation_prompt=True,
+                return_tensors="pt",
+                return_dict=False
+            ).to(self.device)
+        elif input_ids is not None:
+            input_ids = input_ids.to(self.device)
+            if input_ids.dim() == 1:
+                input_ids = input_ids.unsqueeze(0)
+            if prompt_text is None:
+                prompt_text = self.tokenizer.decode(input_ids[0], skip_special_tokens=True)
+        else:
+            raise ValueError("Either prompt_text or input_ids must be provided!")
 
-            new_activations = self.get_last_token_hidden_states(input_ids)
+        new_activations = self.get_last_token_hidden_states(input_ids)
 
-            ranks = self._calculate_single_rank_k_nb(
-                new_activations,
-                self.background_activations_by_layer,
-                0,
-                self.background_labels,
-                k=self.k_nb,
-                device=self.device
-            )
+        ranks = self._calculate_single_rank_k_nb(
+            new_activations,
+            self.background_activations_by_layer,
+            0,
+            self.background_labels,
+            k=self.k_nb,
+            device=self.device
+        )
 
-            scaled_sequence = (ranks - self.mean) / self.std
+        scaled_sequence = (ranks - self.mean) / self.std
 
-            anomaly_score = self.if_model.decision_function(scaled_sequence)[0].item()
-            if anomaly_score < 0:
-                label_str = "Jailbreak Prompt"
-                pred_label = 1
-            else:
-                label_str = "Benign prompt"
-                pred_label = 0
+        anomaly_score = self.if_model.decision_function(scaled_sequence)[0].item()
+        if anomaly_score < 0:
+            label_str = "Jailbreak Prompt"
+            pred_label = 1
+        else:
+            label_str = "Benign prompt"
+            pred_label = 0
 
-            result = [label_str, pred_label]
+        result = [label_str, pred_label]
 
-            if return_score:
-                result.append(anomaly_score)
+        if return_score:
+            result.append(anomaly_score)
 
-            if return_ranks:
-                result.append(ranks.cpu().numpy())
+        if return_ranks:
+            result.append(ranks.cpu().numpy())
 
-            return tuple(result) if len(result) > 1 else result[0]
+        return tuple(result) if len(result) > 1 else result[0]
 
     def _restructure_activations(self, activations_list):
         if not activations_list:
@@ -93,9 +95,9 @@ class JailbreakDetector:
 
     def _get_training_sequences(self):
         num_samples = len(self.background_labels)
-        num_layers = 32
+        num_layers = self.num_layers
 
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = self.device
 
         all_sequences = torch.empty((num_samples, num_layers), device=device)
 
@@ -135,7 +137,7 @@ class JailbreakDetector:
         )
         sorted_indices = torch.argsort(layer_distances, dim=1)
         sorted_background_labels = background_labels_arr[sorted_indices]
-        match_indices_in_sorted_tensor = torch.empty((32), device=device)
+        match_indices_in_sorted_tensor = torch.empty((self.num_layers), device=device)
         for i, s in enumerate(sorted_background_labels):
             match_indices_in_sorted_tensor[i] = (torch.where(s == target_label)[0] + 1)[:k].float().mean()
         return match_indices_in_sorted_tensor

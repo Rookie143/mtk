@@ -31,7 +31,8 @@ def extract_trainset_hiddenstates(your_flag, device, tokenizer, model, benign_pr
                 input_ids = tokenizer.apply_chat_template(
                     messages,
                     add_generation_prompt=True,
-                    return_tensors="pt"
+                    return_tensors="pt",
+                    return_dict=False
                 ).to(model.device)
 
                 if tokenizer.pad_token_id is not None:

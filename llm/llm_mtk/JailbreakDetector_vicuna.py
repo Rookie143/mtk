@@ -17,19 +17,19 @@ class JailbreakDetector:
         self.k_nb = k_nb
         self.background_activations_by_layer = background_layered_activations
         self.background_labels = all_labels
-        self.num_layers = len(self.background_activations_by_layer)
+        self.num_layers = self.background_activations_by_layer.shape[1]
 
         valid_metrics = ['l1', 'l2', 'linf', 'cos']
         if self.metric not in valid_metrics:
             raise ValueError(f"Unsupported metric: {self.metric}")
 
         if target_layers is None:
-            self.target_layers = list(range(0, self.num_layers))
+            self.target_layers = list(range(1, self.model.config.num_hidden_layers + 1))
         else:
             self.target_layers = target_layers
 
         if os.path.exists(f"./{self.your_flag}/training_sequences.pt"):
-            training_sequences = torch.load(f"./{self.your_flag}/training_sequences.pt")
+            training_sequences = torch.load(f"./{self.your_flag}/training_sequences.pt", map_location=self.device)
         else:
             training_sequences = self._get_training_sequences()
 
@@ -42,7 +42,7 @@ class JailbreakDetector:
 
         X_train = (benign_training_sequences - self.mean) / self.std
 
-        self.if_model = PyTorchIsolationForest(n_estimators=n_estimators, max_samples=max_samples, random_state=42)
+        self.if_model = PyTorchIsolationForest(n_estimators=n_estimators, max_samples=max_samples, random_state=random_state)
         self.if_model.fit(X_train)
 
     def predict(self, prompt_text: str = None, input_ids: torch.Tensor = None, return_score=True, attack_key=None,
@@ -52,7 +52,8 @@ class JailbreakDetector:
             input_ids = self.tokenizer.apply_chat_template(
                 messages,
                 add_generation_prompt=True,
-                return_tensors="pt"
+                return_tensors="pt",
+                return_dict=False
             ).to(self.device)
         elif input_ids is not None:
             input_ids = input_ids.to(self.device)
@@ -165,13 +166,8 @@ class JailbreakDetector:
 
         selected_layer_states = []
         for layer_idx in self.target_layers:
-            real_layer_idx = layer_idx + 1
-            if real_layer_idx < len(outputs.hidden_states):
-                vector = outputs.hidden_states[real_layer_idx][0, target_idx, :].clone()
-                selected_layer_states.append(vector)
-            else:
-                vector = outputs.hidden_states[-1][0, target_idx, :].clone()
-                selected_layer_states.append(vector)
+            vector = outputs.hidden_states[layer_idx][0, target_idx, :].clone()
+            selected_layer_states.append(vector)
 
         last_token_states = torch.stack(selected_layer_states, dim=0)
         return last_token_states

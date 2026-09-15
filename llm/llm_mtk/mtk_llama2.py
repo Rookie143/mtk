@@ -1,17 +1,18 @@
 import os
-import sys
 from JailbreakDetector_llama2 import JailbreakDetector
 import torch
+import sys
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import random
 import json
+from runtime import LLM_DIR, configure, label_from_path, parse_args
 from Indicator_analysis_drawing import *
 from extract_AC_json import extract_accuracy_to_excel
 from extract_trainset_hiddenstates_llama2 import extract_trainset_hiddenstates
 from draw_auroc import evaluate_attack_auroc
 try:
-    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+    sys.path.append(str(LLM_DIR))
     from utils.string_utils import load_conversation_template, autodan_SuffixManager
 except ImportError as e:
     sys.exit(1)
@@ -25,7 +26,7 @@ def list_available_attacks(attack_dir):
 
 def load_prompts_from_attack_json(file_path: str):
     prompts = []
-    true_label = int(file_path.split("/")[-1][-6])
+    true_label = label_from_path(file_path)
     try:
         with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
             data = json.load(f)
@@ -154,28 +155,30 @@ if __name__ == '__main__':
     import time
 
     start_time = time.time()
-    your_flag = "llama2"
+    args = parse_args("llama2", 27, 10, 500, 512)
+    configure(args)
+    your_flag = f"{args.output_dir}/seed-{args.seed}_k-{args.k}_trees-{args.n_estimators}_samples-{args.max_samples}"
 
     benign_train_set_list = [
-        ["./datasets/train_data/databricks-dolly-15k.txt", 300],
-        ["./datasets/train_data/alpaca.txt", 300],
-        ["./datasets/train_data/non_refusal_prompts_with_responses_80k.txt", 200],
+        ["datasets/train_data/databricks-dolly-15k.txt", 300],
+        ["datasets/train_data/alpaca.txt", 300],
+        ["datasets/train_data/non_refusal_prompts_with_responses_80k.txt", 200],
     ]
     malicious_train_set_list = [
-        ['./datasets/train_data/AdvBench.txt', 100],
-        ['./datasets/train_data/MaliciousInstruct.txt', 100],
-        ['./datasets/train_data/PKU-SafeRLHF-prompts_3-6k.txt', 600],
+        ['datasets/train_data/AdvBench.txt', 100],
+        ['datasets/train_data/MaliciousInstruct.txt', 100],
+        ['datasets/train_data/PKU-SafeRLHF-prompts_3-6k.txt', 600],
     ]
 
     template_name = 'llama-2'
-    attack_dir = "./datasets/llama2_test/"
-    attack_file_path_list = [os.path.join(attack_dir, attack_key) for attack_key in os.listdir(attack_dir)]
+    attack_dir = "datasets/llama2_test"
+    attack_file_path_list = [os.path.join(attack_dir, attack_key) for attack_key in sorted(os.listdir(attack_dir)) if attack_key.endswith('.json')]
 
     model_path = "model/llama2/"
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    device = args.device
     model = AutoModelForCausalLM.from_pretrained(
         model_path,
-        device_map={'': 'cuda:0'},
+        device_map={'': args.device},
         trust_remote_code=True,
         torch_dtype=torch.float16
     )
@@ -204,9 +207,10 @@ if __name__ == '__main__':
         background_layered_activations=background_layered_activations,
         all_labels=all_labels,
         your_flag=your_flag,
-        n_estimators=500,
-        random_state=42,
-        k_nb=10
+        n_estimators=args.n_estimators,
+        random_state=args.seed,
+        max_samples=args.max_samples,
+        k_nb=args.k
     )
     eval(attack_file_path_list)
     exp_dict = f"{your_flag}/report/"

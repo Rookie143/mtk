@@ -18,7 +18,7 @@ def evaluate_attack_auroc(exp_dir, test_dict_name):
     result_dict = {}
 
     search_pattern = os.path.join(exp_dir, f"{test_dict_name}_*_1_results_detail.csv")
-    for file_path in glob.glob(search_pattern):
+    for file_path in sorted(glob.glob(search_pattern)):
         file_name = os.path.basename(file_path)
         attack_name = file_name.replace(f"{test_dict_name}_", "").replace("_1_results_detail.csv", "")
 
@@ -35,8 +35,8 @@ def evaluate_attack_auroc(exp_dir, test_dict_name):
             auroc = roc_auc_score(y_attack, y_score)
             result_dict[attack_name] = auroc
 
-        except Exception:
-            pass
+        except Exception as error:
+            raise RuntimeError(f"Failed to evaluate {file_path}") from error
     result_df = pd.DataFrame(list(result_dict.items()), columns=["Attack Method", "AUROC"])
     out_path = os.path.join(exp_dir, "all_attack_auroc_results.csv")
     result_df.to_csv(out_path, index=False, encoding="utf-8-sig")
