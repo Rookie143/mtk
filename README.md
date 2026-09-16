@@ -1,5 +1,20 @@
 # MTK
 
+This repository contains the MTK jailbreak detection implementation and a standalone
+adaptive attack package for evaluating MTK-aware attacks.
+
+## Repository Structure
+
+| Path | Purpose |
+| --- | --- |
+| `llm/llm_mtk` | MTK detection and evaluation scripts for LLMs. |
+| `vlm` | MTK detection and evaluation scripts for VLMs. |
+| `adaptive_attack` | Standalone adaptive GCG attack with `L1`/`L2`/`L3` evasion losses. |
+
+If you only need the adaptive attack implementation, see
+[`adaptive_attack/README.md`](adaptive_attack/README.md). The `adaptive_attack`
+directory can be installed and used independently from the rest of this repository.
+
 ## 📋 Environment Requirements
 
 ### Basic Environment
@@ -24,6 +39,12 @@ pip install -r requirements.txt
 #Install llm core dependencies
 cd mtk/llm/llm_mtk
 pip install -r requirements.txt
+```
+
+To install the adaptive attack package:
+
+```bash
+pip install -e ./adaptive_attack
 ```
 
 ## 🚀 VLM_Quick Start

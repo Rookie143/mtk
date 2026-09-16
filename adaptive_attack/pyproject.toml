@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mtk-adaptive-attack"
+version = "0.1.0"
+description = "MTK L1/L2/L3 adaptive GCG attack implementation"
+requires-python = ">=3.9"
+dependencies = [
+    "scipy>=1.7.0",
+    "sentencepiece>=0.2.0",
+    "torch>=2.0",
+    "tqdm>=4.65.0",
+    "transformers>=4.4,<=4.47.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+]
+
+[tool.setuptools]
+packages = ["adaptive_attack", "adaptive_attack.examples"]
+package-dir = { "adaptive_attack" = "." }
