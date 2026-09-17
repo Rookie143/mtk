@@ -1,173 +1,134 @@
-from IsolationForest import PyTorchIsolationForest
+from __future__ import annotations
+
 import os
+
 import torch
-from tqdm import tqdm
-from transformers import GenerationConfig
-import torch.nn.functional as F
+
+
+from IsolationForest import PyTorchIsolationForest
+
+from extract_trainset_hiddenstates_vicuna import extract_dual_endpoint_activations
+
+
+def rank_features(queries, background, labels, k: int, device: str, exclude_self=False, batch_size=64):
+    n_queries, n_layers, _ = queries.shape
+    output = torch.empty((n_queries, n_layers), dtype=torch.float32)
+    background = background.to(device)
+    labels = labels.to(device)
+    benign_count = int((labels == 0).sum()) - int(exclude_self)
+    if k > benign_count:
+        raise ValueError(f"k={k} exceeds available benign references {benign_count}")
+    positions = torch.arange(1, len(labels) + 1, device=device, dtype=torch.float32)
+    for layer in range(n_layers):
+        refs = background[:, layer, :]
+        for start in range(0, n_queries, batch_size):
+            stop = min(start + batch_size, n_queries)
+            query = queries[start:stop, layer, :].to(device=device, dtype=background.dtype)
+            distances = (refs.unsqueeze(0) - query.unsqueeze(1)).norm(p=2, dim=2)
+            if exclude_self:
+                local = torch.arange(stop - start, device=device)
+                distances[local, torch.arange(start, stop, device=device)] = torch.inf
+            order = distances.argsort(dim=1)
+            benign_sorted = labels[order].eq(0)
+            ranked_positions = positions.expand(stop - start, -1).masked_fill(~benign_sorted, torch.inf)
+            nearest = ranked_positions.topk(k, largest=False, dim=1).values
+            output[start:stop, layer] = nearest.mean(dim=1).cpu()
+        print(f"rank features layer {layer + 1}/{n_layers}", flush=True)
+    return output
+
 
 class JailbreakDetector:
-    def __init__(self, model, tokenizer, background_layered_activations, all_labels, your_flag,
-                 n_estimators, random_state, max_samples, k_nb, target_layers=None, metric='l2'):
+    def __init__(
+        self,
+        model,
+        tokenizer,
+        background_layered_activations,
+        all_labels,
+        your_flag,
+        colon_settings: dict,
+        ist_settings: dict,
+        ist_weight: float,
+        random_state: int,
+        device: str,
+        colon_batch_size: int,
+        ist_batch_size: int,
+        rank_batch_size: int,
+    ):
+        if not 0.0 <= ist_weight <= 1.0:
+            raise ValueError("ist_weight must be in [0, 1]")
         self.model = model
         self.tokenizer = tokenizer
-        self.device = model.device
+        self.background = background_layered_activations
+        self.labels = all_labels
         self.your_flag = your_flag
-        self.metric = metric
-        self.max_samples = max_samples
-        self.k_nb = k_nb
-        self.background_activations_by_layer = background_layered_activations
-        self.background_labels = all_labels
-        self.num_layers = self.background_activations_by_layer.shape[1]
+        self.colon_settings = colon_settings
+        self.ist_settings = ist_settings
+        self.ist_weight = ist_weight
+        self.random_state = random_state
+        self.device = device
+        self.colon_batch_size = colon_batch_size
+        self.ist_batch_size = ist_batch_size
+        self.rank_batch_size = rank_batch_size
+        self.models = {}
+        self.normalizers = {}
+        for endpoint, settings in (("colon", colon_settings), ("ist", ist_settings)):
+            sequences = self._training_sequences(endpoint, settings["k"])
+            benign = sequences[all_labels == 0]
+            mean = benign.mean(dim=0, keepdim=True)
+            std = benign.std(dim=0, keepdim=True) + 1e-8
+            train = (benign - mean) / std
+            forest = PyTorchIsolationForest(
+                n_estimators=settings["n_estimators"],
+                max_samples=settings["max_samples"],
+                random_state=random_state,
+            ).fit(train)
+            self.models[endpoint] = forest
+            self.normalizers[endpoint] = (mean, std)
 
-        valid_metrics = ['l1', 'l2', 'linf', 'cos']
-        if self.metric not in valid_metrics:
-            raise ValueError(f"Unsupported metric: {self.metric}")
-
-        if target_layers is None:
-            self.target_layers = list(range(1, self.model.config.num_hidden_layers + 1))
-        else:
-            self.target_layers = target_layers
-
-        if os.path.exists(f"./{self.your_flag}/training_sequences.pt"):
-            training_sequences = torch.load(f"./{self.your_flag}/training_sequences.pt", map_location=self.device)
-        else:
-            training_sequences = self._get_training_sequences()
-
-        y_train = self.background_labels
-        benign_indices = torch.where(y_train == 0)[0]
-        benign_training_sequences = training_sequences[benign_indices]
-
-        self.mean = benign_training_sequences.mean(dim=0, keepdim=True)
-        self.std = benign_training_sequences.std(dim=0, keepdim=True) + 1e-8
-
-        X_train = (benign_training_sequences - self.mean) / self.std
-
-        self.if_model = PyTorchIsolationForest(n_estimators=n_estimators, max_samples=max_samples, random_state=random_state)
-        self.if_model.fit(X_train)
-
-    def predict(self, prompt_text: str = None, input_ids: torch.Tensor = None, return_score=True, attack_key=None,
-                return_ranks=False):
-        if input_ids is None and prompt_text is not None:
-            messages = [{"role": "user", "content": prompt_text}]
-            input_ids = self.tokenizer.apply_chat_template(
-                messages,
-                add_generation_prompt=True,
-                return_tensors="pt",
-                return_dict=False
-            ).to(self.device)
-        elif input_ids is not None:
-            input_ids = input_ids.to(self.device)
-            if input_ids.dim() == 1:
-                input_ids = input_ids.unsqueeze(0)
-            if prompt_text is None:
-                prompt_text = self.tokenizer.decode(input_ids[0], skip_special_tokens=True)
-        else:
-            raise ValueError("Either prompt_text or input_ids must be provided!")
-
-        new_activations = self.get_last_token_hidden_states(input_ids)
-
-        ranks = self._calculate_single_rank_k_nb(
-            new_activations,
-            self.background_activations_by_layer,
-            0,
-            self.background_labels,
-            k=self.k_nb,
-            device=self.device
+    def _training_sequences(self, endpoint: str, k: int):
+        path = f"./{self.your_flag}/training_sequences_{endpoint}.pt"
+        if os.path.exists(path):
+            return torch.load(path, map_location="cpu", weights_only=False)
+        sequences = rank_features(
+            self.background[endpoint],
+            self.background[endpoint],
+            self.labels,
+            k,
+            self.device,
+            exclude_self=True,
+            batch_size=self.rank_batch_size,
         )
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        torch.save(sequences, path)
+        return sequences
 
-        scaled_sequence = (ranks - self.mean) / self.std
-        anomaly_score = self.if_model.decision_function(scaled_sequence)[0].item()
-
-        if anomaly_score < 0:
-            label_str = "Jailbreak Prompt"
-            pred_label = 1
-        else:
-            label_str = "Benign prompt"
-            pred_label = 0
-
-        result = [label_str, pred_label]
-        if return_score:
-            result.append(anomaly_score)
-        if return_ranks:
-            result.append(ranks.cpu().numpy())
-
-        return tuple(result) if len(result) > 1 else result[0]
-
-    def _get_training_sequences(self):
-        num_target_layers = len(self.target_layers)
-        num_samples = len(self.background_labels)
-        all_sequences = torch.empty((num_samples, num_target_layers), device=self.device)
-        background_activations_gpu = self.background_activations_by_layer
-        background_labels_gpu = self.background_labels
-
-        for i in tqdm(range(num_samples), desc="Generating training sequences"):
-            current_vector = background_activations_gpu[i]
-            mask = torch.ones(num_samples, dtype=torch.bool, device=self.device)
-            mask[i] = False
-            other_vectors = background_activations_gpu[mask]
-            other_labels = background_labels_gpu[mask]
-            ranks = self._calculate_single_rank_k_nb(
-                current_vector, other_vectors, 0, other_labels, k=self.k_nb, device=self.device
+    def score_activations(self, activations):
+        scores = {}
+        for endpoint, settings in (("colon", self.colon_settings), ("ist", self.ist_settings)):
+            ranks = rank_features(
+                activations[endpoint],
+                self.background[endpoint],
+                self.labels,
+                settings["k"],
+                self.device,
+                exclude_self=False,
+                batch_size=self.rank_batch_size,
             )
-            all_sequences[i] = ranks
+            mean, std = self.normalizers[endpoint]
+            normalized = (ranks - mean) / std
+            scores[endpoint] = -self.models[endpoint].decision_function(normalized).cpu().numpy()
+        fused = (1.0 - self.ist_weight) * scores["colon"] + self.ist_weight * scores["ist"]
+        return fused, scores
 
-        save_dir = os.path.dirname(f"./{self.your_flag}/training_sequences.pt")
-        os.makedirs(save_dir, exist_ok=True)
-        torch.save(all_sequences, f"./{self.your_flag}/training_sequences.pt")
-        return all_sequences
-
-    def _calculate_single_rank_k_nb(self, test_vector, background_vectors, target_label, background_labels_arr, k,
-                                    device):
-        test_vector = test_vector.unsqueeze(0)
-        if self.metric == 'l2':
-            layer_distances = (background_vectors - test_vector).norm(p=2, dim=-1)
-        elif self.metric == 'l1':
-            layer_distances = (background_vectors - test_vector).abs().sum(dim=-1)
-        elif self.metric == 'linf':
-            layer_distances = (background_vectors - test_vector).abs().max(dim=-1).values
-        elif self.metric == 'cos':
-            sim = F.cosine_similarity(background_vectors, test_vector, dim=-1)
-            layer_distances = 1 - sim
-        else:
-            raise ValueError(f"Unknown metric: {self.metric}")
-
-        layer_distances = layer_distances.permute(1, 0)
-        sorted_indices = torch.argsort(layer_distances, dim=1)
-
-        num_layers = layer_distances.shape[0]
-        expanded_labels = background_labels_arr.view(1, -1).expand(num_layers, -1)
-        sorted_background_labels = torch.gather(expanded_labels, 1, sorted_indices)
-
-        match_indices_in_sorted_tensor = torch.empty((num_layers), device=device)
-        for i in range(num_layers):
-            s = sorted_background_labels[i]
-            match_indices_in_sorted_tensor[i] = (torch.where(s == target_label)[0] + 1)[:k].float().mean()
-        return match_indices_in_sorted_tensor
-
-    def get_last_token_hidden_states(self, input_ids):
-        if input_ids.dim() == 1:
-            input_ids = input_ids.unsqueeze(0)
-        input_ids = input_ids.to(self.device)
-
-        with torch.no_grad():
-            outputs = self.model(
-                input_ids=input_ids,
-                output_hidden_states=True,
-                return_dict=True
-            )
-
-        seq_ids = input_ids[0]
-
-        if self.tokenizer.pad_token_id is not None:
-            non_pad_idxs = torch.nonzero(seq_ids != self.tokenizer.pad_token_id, as_tuple=True)[0]
-            target_idx = non_pad_idxs[-1].item() if len(non_pad_idxs) > 0 else seq_ids.size(0) - 1
-        else:
-            target_idx = seq_ids.size(0) - 1
-
-        selected_layer_states = []
-        for layer_idx in self.target_layers:
-            vector = outputs.hidden_states[layer_idx][0, target_idx, :].clone()
-            selected_layer_states.append(vector)
-
-        last_token_states = torch.stack(selected_layer_states, dim=0)
-        return last_token_states
+    def predict_batch(self, prompts: list[str]):
+        activations = extract_dual_endpoint_activations(
+            self.model,
+            self.tokenizer,
+            prompts,
+            self.colon_batch_size,
+            self.ist_batch_size,
+            self.device,
+        )
+        fused, endpoint_scores = self.score_activations(activations)
+        labels = (fused > 0).astype("int64")
+        return fused, labels, endpoint_scores

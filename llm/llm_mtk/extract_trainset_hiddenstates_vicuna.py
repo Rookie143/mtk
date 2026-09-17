@@ -1,96 +1,132 @@
-import torch
+from __future__ import annotations
+
 import os
-from tqdm import tqdm
+
+import torch
 
 
-def extract_trainset_hiddenstates(your_flag, device, tokenizer, model, benign_prompts, malicious_prompts):
-    load_path = f"./{your_flag}/saved_features_and_labels.pt"
-    need_extract = True
+VICUNA_FUSION_CHAT_TEMPLATE = (
+    "{% if messages[0]['role'] == 'system' %}"
+    "{% set loop_messages = messages[1:] %}"
+    "{% set system_message = messages[0]['content'] %}"
+    "{% else %}"
+    "{% set loop_messages = messages %}"
+    "{% set system_message = \"A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions.\" %}"
+    "{% endif %}"
+    "{{ system_message + ' ' }}"
+    "{% for message in loop_messages %}"
+    "{% if message['role'] == 'user' %}"
+    "{{ 'USER: ' + message['content'] + ' ' }}"
+    "{% elif message['role'] == 'assistant' %}"
+    "{{ 'ASSISTANT: ' + message['content'] + eos_token + ' ' }}"
+    "{% endif %}"
+    "{% endfor %}"
+    "{% if add_generation_prompt %}"
+    "{{ 'ASSISTANT:' }}"
+    "{% endif %}"
+)
 
-    if os.path.exists(load_path):
-        try:
-            loaded_data = torch.load(load_path, map_location=device)
-            background_layered_activations = loaded_data["background_layered_activations"]
-            all_labels = loaded_data["labels"]
-            loaded_layers = background_layered_activations.shape[1]
-            current_model_layers = model.config.num_hidden_layers
-            if loaded_layers != current_model_layers:
-                need_extract = True
-            else:
-                need_extract = False
-        except Exception as e:
-            need_extract = True
 
-    if need_extract:
-        all_activations = []
+def configure_tokenizer(tokenizer) -> None:
+    tokenizer.padding_side = "left"
+    if tokenizer.chat_template is None:
+        tokenizer.chat_template = VICUNA_FUSION_CHAT_TEMPLATE
+    if tokenizer.pad_token_id is None:
+        if tokenizer.unk_token is not None:
+            tokenizer.pad_token = tokenizer.unk_token
+        else:
+            tokenizer.pad_token = tokenizer.eos_token
 
-        def process_batch(prompts, desc_text):
-            batch_acts = []
-            for sentence in tqdm(prompts, desc=desc_text):
-                messages = [{"role": "user", "content": sentence}]
-                input_ids = tokenizer.apply_chat_template(
-                    messages,
-                    add_generation_prompt=True,
-                    return_tensors="pt",
-                    return_dict=False
-                ).to(model.device)
 
-                if tokenizer.pad_token_id is not None:
-                    attention_mask = (input_ids != tokenizer.pad_token_id).long().to(model.device)
-                else:
-                    attention_mask = torch.ones_like(input_ids).to(model.device)
+def render_prompts(tokenizer, prompts: list[str]) -> list[str]:
+    return [tokenizer.apply_chat_template(
+        [{"role": "user", "content": prompt}], tokenize=False, add_generation_prompt=True
+    ) for prompt in prompts]
 
-                with torch.no_grad():
-                    outputs = model(
-                        input_ids=input_ids,
-                        attention_mask=attention_mask,
-                        output_hidden_states=True,
-                        return_dict=True
-                    )
-                    hidden_states = outputs.hidden_states[1:]
 
-                    seq_len = input_ids.shape[1]
+def extract_endpoint_activations(model, tokenizer, prompts, batch_size: int, device: str, endpoint: str):
+    if endpoint not in {"colon", "ist"}:
+        raise ValueError(f"Unknown endpoint: {endpoint}")
+    chunks = []
+    max_length = min(int(getattr(model.config, "max_position_embeddings", 4096)), 4096)
+    rendered = render_prompts(tokenizer, prompts)
+    for start in range(0, len(rendered), batch_size):
+        batch = rendered[start:start + batch_size]
+        encoded = tokenizer(
+            batch,
+            padding=True,
+            truncation=True,
+            max_length=max_length,
+            add_special_tokens=False,
+            return_tensors="pt",
+        )
+        input_ids = encoded.input_ids.to(device)
+        attention_mask = encoded.attention_mask.to(device)
+        offset = -1 if endpoint == "colon" else -3
+        targets = torch.full(
+            (input_ids.shape[0],), input_ids.shape[1] + offset, dtype=torch.long, device=device
+        )
+        if endpoint == "ist":
+            decoded = [tokenizer.decode([int(input_ids[row, targets[row]])]) for row in range(input_ids.shape[0])]
+            if any(piece != "IST" for piece in decoded):
+                raise ValueError(f"Vicuna IST endpoint invariant failed: {decoded}")
+        with torch.inference_mode():
+            outputs = model(
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                output_hidden_states=True,
+                return_dict=True,
+            )
+        row_ids = torch.arange(input_ids.shape[0], device=device)
+        layers = outputs.hidden_states[1:model.config.num_hidden_layers + 1]
+        states = torch.stack([layer[row_ids, targets, :] for layer in layers], dim=1)
+        chunks.append(states.detach().to(device="cpu", dtype=torch.float16))
+        print(f"{endpoint} features {min(start + batch_size, len(rendered))}/{len(rendered)}", flush=True)
+        del outputs, layers, states, input_ids, attention_mask, encoded
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+    return torch.cat(chunks, dim=0)
 
-                    if tokenizer.padding_side == 'right':
-                        last_idx_tensor = attention_mask.sum(dim=1) - 1
-                    else:
-                        last_idx_tensor = input_ids.new_full((input_ids.shape[0],), seq_len - 1)
 
-                    scalar_idx = last_idx_tensor[0].item()
+def extract_dual_endpoint_activations(
+    model, tokenizer, prompts, colon_batch_size: int, ist_batch_size: int, device: str
+):
+    return {
+        "colon": extract_endpoint_activations(
+            model, tokenizer, prompts, colon_batch_size, device, "colon"
+        ),
+        "ist": extract_endpoint_activations(
+            model, tokenizer, prompts, ist_batch_size, device, "ist"
+        ),
+    }
 
-                    activations = [layer_hidden_state[0, scalar_idx, :].cpu().clone() for layer_hidden_state in
-                                   hidden_states]
 
-                    del input_ids, outputs, hidden_states
-                    torch.cuda.empty_cache()
-
-                batch_acts.append(activations)
-            return batch_acts
-
-        benign_acts = process_batch(benign_prompts, "Extracting benign sample features")
-        all_activations.extend(benign_acts)
-
-        malicious_acts = process_batch(malicious_prompts, "Extracting malicious sample features")
-        all_activations.extend(malicious_acts)
-
-        benign_labels = torch.zeros(len(benign_prompts), device=device)
-        malicious_labels = torch.ones(len(malicious_prompts), device=device)
-        all_labels = torch.cat([benign_labels, malicious_labels], dim=0)
-
-        num_layers = len(all_activations[0])
-
-        layered_activations = []
-        for l in range(num_layers):
-            layer_feats = torch.stack([sample_feats[l] for sample_feats in all_activations], dim=0)
-            layered_activations.append(layer_feats)
-
-        background_layered_activations = torch.stack(layered_activations, dim=1).to(device)
-
-        save_dir = os.path.dirname(load_path)
-        os.makedirs(save_dir, exist_ok=True)
-        torch.save({
-            "background_layered_activations": background_layered_activations,
-            "labels": all_labels
-        }, load_path)
-
-    return background_layered_activations, all_labels
+def extract_trainset_hiddenstates(
+    your_flag,
+    device,
+    tokenizer,
+    model,
+    benign_prompts,
+    malicious_prompts,
+    colon_batch_size: int,
+    ist_batch_size: int,
+):
+    path = f"./{your_flag}/saved_features_and_labels.pt"
+    if os.path.exists(path):
+        saved = torch.load(path, map_location="cpu", weights_only=False)
+        return saved["background_layered_activations"], saved["labels"]
+    features = extract_dual_endpoint_activations(
+        model,
+        tokenizer,
+        benign_prompts + malicious_prompts,
+        colon_batch_size,
+        ist_batch_size,
+        device,
+    )
+    labels = torch.tensor([0] * len(benign_prompts) + [1] * len(malicious_prompts))
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    torch.save({
+        "background_layered_activations": features,
+        "labels": labels,
+    }, path)
+    return features, labels

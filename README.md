@@ -152,15 +152,15 @@ Each model should be stored in its own subdirectory following the Hugging Face s
 
 ```bash
 # Run jailbreak detection evaluation for llama2
-python mtk_llama2.py --seed 27 --k 10 --n-estimators 500 --max-samples 512
+bash detection_llama2.bash
 
 # Run jailbreak detection evaluation for llama3
-python mtk_llama3.py --seed 35 --k 10 --n-estimators 500 --max-samples 512
+bash detection_llama3.bash
 
 # Run jailbreak detection evaluation for mitstral
-python mtk_mistral.py --seed 47 --k 10 --n-estimators 500 --max-samples 512
+bash detection_mistral.bash
 
 # Run jailbreak detection evaluation for vicuna
-python mtk_vicuna.py --seed 42 --k 10 --n-estimators 500 --max-samples 512
+bash detection_vicuna.bash
 
 ```

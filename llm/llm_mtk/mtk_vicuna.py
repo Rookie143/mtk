@@ -1,173 +1,182 @@
-import os
-from JailbreakDetector_vicuna import JailbreakDetector
-import torch
-import sys
-from tqdm import tqdm
-from transformers import AutoModelForCausalLM, AutoTokenizer
-import random
+from __future__ import annotations
+
+import argparse
+import hashlib
 import json
-from runtime import LLM_DIR, configure, label_from_path, parse_args
-from Indicator_analysis_drawing import *
-from extract_AC_json import extract_accuracy_to_excel
-from extract_trainset_hiddenstates_vicuna import extract_trainset_hiddenstates
+import os
+import random
+from pathlib import Path
+
+os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
+os.environ.setdefault("PYTORCH_ALLOC_CONF", "expandable_segments:True")
+
+import numpy as np
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+from Indicator_analysis_drawing import generate_report
+from JailbreakDetector_vicuna import JailbreakDetector
 from draw_auroc import evaluate_attack_auroc
-try:
-    sys.path.append(str(LLM_DIR))
-    from utils.string_utils import load_conversation_template, autodan_SuffixManager
-except ImportError as e:
-    sys.exit(1)
+from extract_AC_json import extract_accuracy_to_excel
+from extract_trainset_hiddenstates_vicuna import (
+    configure_tokenizer,
+    extract_trainset_hiddenstates,
+)
 
 
-def list_available_attacks(attack_dir):
-    if not os.path.isdir(attack_dir):
-        return []
-    files = [f for f in os.listdir(attack_dir) if f.lower().endswith('.json')]
-    return [os.path.splitext(f)[0] for f in sorted(files)]
+HERE = Path(__file__).resolve().parent
+REPO = HERE.parent
 
 
-def load_prompts_from_attack_json(file_path: str):
-    prompts = []
-    true_label = label_from_path(file_path)
-    try:
-        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
-            data = json.load(f)
-    except json.JSONDecodeError:
-        with open(file_path, 'r', encoding='gbk', errors='ignore') as f:
-            data = json.load(f)
+def parse_args(argv=None):
+    parser = argparse.ArgumentParser(
+        description="Vicuna dual-endpoint MTK reproduction"
+    )
+    parser.add_argument("--seed", type=int, default=14)
+    parser.add_argument("--colon-k", type=int, default=10)
+    parser.add_argument("--colon-n-estimators", type=int, default=500)
+    parser.add_argument("--colon-max-samples", type=int, default=512)
+    parser.add_argument("--ist-k", type=int, default=10)
+    parser.add_argument("--ist-n-estimators", type=int, default=500)
+    parser.add_argument("--ist-max-samples", type=int, default=512)
+    parser.add_argument("--ist-weight", type=float, default=0.27)
+    parser.add_argument("--device", default="cuda:0" if torch.cuda.is_available() else "cpu")
+    parser.add_argument("--output-dir", default="table4_seed_reproducible/mtk_vicuna_runs")
+    args = parser.parse_args(argv)
+    positive = (
+        args.colon_k,
+        args.colon_n_estimators,
+        args.colon_max_samples,
+        args.ist_k,
+        args.ist_n_estimators,
+        args.ist_max_samples,
+    )
+    if any(value < 1 for value in positive):
+        parser.error("k, n-estimators, and max-samples must be positive")
+    if not 0.0 <= args.ist_weight <= 1.0:
+        parser.error("--ist-weight must be in [0, 1]")
+    return args
 
-    if not isinstance(data, list):
-        raise ValueError(f"{file_path} is not a JSON list.")
-    for item in data:
+
+def set_determinism(seed: int):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+    torch.use_deterministic_algorithms(True, warn_only=True)
+
+
+def stable_seed(seed: int, namespace: str) -> int:
+    digest = hashlib.sha256(f"{seed}:{namespace}".encode()).digest()
+    return int.from_bytes(digest[:8], "big")
+
+
+def method_name(file_path):
+    stem = Path(file_path).stem
+    return stem[:-2] if stem.endswith(("_0", "_1")) else stem
+
+
+def load_prompts_from_attack_json(file_path):
+    with open(file_path, "r", encoding="utf-8", errors="ignore") as stream:
+        data = json.load(stream)
+    suffix = Path(file_path).stem.rsplit("_", 1)[-1]
+    if suffix not in {"0", "1"}:
+        raise ValueError(f"Dataset filename must end in _0 or _1: {file_path}")
+    records = []
+    for source_index, item in enumerate(data):
         if not isinstance(item, dict):
             continue
-        prompt = item.get('jailbreak')
-        if prompt and isinstance(prompt, str):
-            prompts.append({"prompt": prompt, "true_label": true_label})
-    return prompts
+        prompt = item.get("jailbreak") or item.get("prompt")
+        if isinstance(prompt, str) and prompt:
+            records.append({
+                "prompt": prompt,
+                "true_label": int(suffix),
+                "source_index": source_index,
+            })
+    return records
 
 
-def get_train_dataset(benign_path_list, malicious_path_list):
-    benign_prompts = []
-    malicious_prompts = []
-    for b_path in benign_path_list:
-        with open(b_path[0], "r", errors='ignore') as b_f:
-            b_f_content = b_f.readlines()
-            benign_prompts.extend(random.sample(b_f_content, min(b_path[1], len(b_f_content))))
-    for m_path in malicious_path_list:
-        with open(m_path[0], "r", errors='ignore') as m_f:
-            m_f_content = m_f.readlines()
-            malicious_prompts.extend(random.sample(m_f_content, min(m_path[1], len(m_f_content))))
-    return benign_prompts, malicious_prompts
+def deterministic_sample(rows, count, seed, namespace):
+    if len(rows) <= count:
+        return rows
+    rng = random.Random(stable_seed(seed, namespace))
+    return [rows[index] for index in rng.sample(range(len(rows)), count)]
 
 
-def predict(prompt_text):
-    pred_label_str, pred_label, anomaly_score = detector.predict(prompt_text=prompt_text, return_score=True)
-    return pred_label_str, pred_label, anomaly_score
+def get_train_dataset(benign_path_list, malicious_path_list, seed):
+    selected = []
+    for role, path_list in (("benign", benign_path_list), ("malicious", malicious_path_list)):
+        role_prompts = []
+        for file_path, count in path_list:
+            with open(file_path, "r", encoding="utf-8", errors="ignore", newline="") as stream:
+                rows = [line for line in stream.readlines() if line.strip()]
+            rng = random.Random(stable_seed(seed, f"train:{role}:{Path(file_path).name}"))
+            role_prompts.extend(rows[index] for index in rng.sample(range(len(rows)), count))
+        selected.append(role_prompts)
+    return selected
 
 
-def eval(attack_file_path_list):
-    def get_last_two_levels(path):
-        normalized_path = os.path.normpath(path)
-        path_parts = normalized_path.split(os.sep)
-        last_two_parts = path_parts[-2:] if len(path_parts) >= 2 else path_parts
-        dir_name = last_two_parts[0]
-        file_name = last_two_parts[1] if len(last_two_parts) > 1 else ""
-        file_name_without_ext = os.path.splitext(file_name)[0]
-        return f"{dir_name}_{file_name_without_ext}"
-
-    def is_already_detected(attack_key, your_flag):
-        if not os.path.exists(f"./{your_flag}/report"):
-            return False
-        report_file = os.path.join(f"./{your_flag}/report", f"{attack_key}_report.json")
-        return os.path.exists(report_file)
-
-    for attack_file_path in tqdm(attack_file_path_list, desc="Evaluating attack types"):
+def eval(attack_file_path_list, detector, your_flag, seed):
+    for file_path in attack_file_path_list:
+        attack_key = f"vicuna_test_{Path(file_path).stem}"
+        report_path = Path(your_flag) / "report" / f"{attack_key}_report.json"
+        if report_path.exists():
+            try:
+                with report_path.open("r", encoding="utf-8") as stream:
+                    json.load(stream)
+            except (OSError, json.JSONDecodeError):
+                pass
+            else:
+                continue
+        records = load_prompts_from_attack_json(file_path)
+        records = deterministic_sample(
+            records, 500, seed, f"test:{method_name(file_path)}"
+        )
+        prompts = [record["prompt"] for record in records]
+        attack_scores, predicted_labels, _ = detector.predict_batch(prompts)
         results_detail = []
-        current_attack_key = get_last_two_levels(attack_file_path)
-
-        if is_already_detected(current_attack_key, your_flag):
-            continue
-
-        if os.path.basename(attack_file_path) == "autodan_1.json":
-            attack_key = current_attack_key
-            with open(attack_file_path, 'r', encoding='utf-8') as f:
-                autodan_data = json.load(f)
-
-            if not isinstance(autodan_data, list):
-                continue
-
-            conv_template = load_conversation_template(template_name)
-            total = len(autodan_data)
-            if total > 500:
-                autodan_data = random.sample(autodan_data, 500)
-            total = len(autodan_data)
-
-            for i, item in enumerate(tqdm(autodan_data, desc="Predicting AutoDAN samples")):
-                goal = (item.get('goal') or item.get('instruction') or "").strip()
-                jailbreak = (item.get('jailbreak') or "").strip()
-                p_suffix = jailbreak[len(goal):].strip() if len(jailbreak) >= len(goal) else jailbreak
-                target = item.get('target')
-
-                s_manager = autodan_SuffixManager(
-                    tokenizer=tokenizer,
-                    conv_template=conv_template,
-                    instruction=goal,
-                    target=target,
-                    adv_string=p_suffix
-                )
-                input_ids = s_manager.get_input_ids(adv_string=p_suffix)
-
-                pred_label_str, pred_label, anomaly_score = detector.predict(input_ids=input_ids, return_score=True)
-
-                results_detail.append({
-                    "Sample_Index": i + 1,
-                    "prompt": jailbreak[:500] + "..." if len(jailbreak) > 500 else jailbreak,
-                    "True_Label": 1,
-                    "Predicted_Label": pred_label,
-                    "Anomaly_Score": round(anomaly_score, 4),
-                    "Prediction_Result": pred_label_str
-                })
-
-        else:
-            attack_key = current_attack_key
-            test_samples = load_prompts_from_attack_json(attack_file_path)
-            if len(test_samples) == 0:
-                continue
-            total = len(test_samples)
-            if len(test_samples) > 500:
-                test_samples = random.sample(test_samples, 500)
-            total = len(test_samples)
-
-            for idx, sample in enumerate(tqdm(test_samples, desc="Predicting normal attack samples")):
-                prompt = sample["prompt"]
-                true_label = sample["true_label"]
-
-                pred_label_str, pred_label, anomaly_score = detector.predict(prompt_text=prompt, return_score=True)
-
-                results_detail.append({
-                    "Sample_Index": idx + 1,
-                    "prompt": prompt[:500] + "..." if len(prompt) > 500 else prompt,
-                    "True_Label": true_label,
-                    "Predicted_Label": pred_label,
-                    "Anomaly_Score": round(anomaly_score, 4),
-                    "Prediction_Result": pred_label_str
-                })
-        generate_report(attack_key, results_detail, your_flag, total)
+        for position, (record, attack_score, predicted_label) in enumerate(
+            zip(records, attack_scores, predicted_labels), start=1
+        ):
+            prompt = record["prompt"]
+            results_detail.append({
+                "Sample_Index": position,
+                "prompt": prompt[:500] + "..." if len(prompt) > 500 else prompt,
+                "True_Label": record["true_label"],
+                "Predicted_Label": int(predicted_label),
+                "Anomaly_Score": round(-float(attack_score), 4),
+                "Prediction_Result": "Jailbreak Prompt" if predicted_label else "Benign prompt",
+            })
+        generate_report(attack_key, results_detail, your_flag, len(records))
+        print(f"evaluated {attack_key}: {len(records)}", flush=True)
     extract_accuracy_to_excel(your_flag)
 
 
-if __name__ == '__main__':
-    import time
-
-    start_time = time.time()
-    args = parse_args("vicuna", 22, 5, 100, 512)
-    configure(args)
-    your_flag = f"{args.output_dir}/seed-{args.seed}_k-{args.k}_trees-{args.n_estimators}_samples-{args.max_samples}"
-    ab_k = args.k
-    n_esti = args.n_estimators
-    max_samp = args.max_samples
-    now_metric = "l2"
-    target_layers_indices = list(range(1, 33))
+def main(argv=None):
+    args = parse_args(argv)
+    os.chdir(REPO)
+    set_determinism(args.seed)
+    your_flag = (
+        f"{args.output_dir}/"
+        f"seed-{args.seed}_"
+        f"colon-k-{args.colon_k}-trees-{args.colon_n_estimators}-samples-{args.colon_max_samples}_"
+        f"ist-k-{args.ist_k}-trees-{args.ist_n_estimators}-samples-{args.ist_max_samples}_"
+        f"ist-weight-{args.ist_weight:.4f}"
+    )
+    colon_batch_size = 8
+    ist_batch_size = 16
+    rank_batch_size = 64
+    colon_settings = {
+        "k": args.colon_k,
+        "n_estimators": args.colon_n_estimators,
+        "max_samples": args.colon_max_samples,
+    }
+    ist_settings = {
+        "k": args.ist_k,
+        "n_estimators": args.ist_n_estimators,
+        "max_samples": args.ist_max_samples,
+    }
 
     benign_train_set_list = [
         ["datasets/train_data/databricks-dolly-15k.txt", 300],
@@ -175,81 +184,61 @@ if __name__ == '__main__':
         ["datasets/train_data/non_refusal_prompts_with_responses_80k.txt", 200],
     ]
     malicious_train_set_list = [
-        ['datasets/train_data/AdvBench.txt', 100],
-        ['datasets/train_data/MaliciousInstruct.txt', 100],
-        ['datasets/train_data/PKU-SafeRLHF-prompts_3-6k.txt', 600],
+        ["datasets/train_data/AdvBench.txt", 100],
+        ["datasets/train_data/MaliciousInstruct.txt", 100],
+        ["datasets/train_data/PKU-SafeRLHF-prompts_3-6k.txt", 600],
     ]
-
-    template_name = 'vicuna-7b'
-    attack_dir = "datasets/vicuna_test/"
-    attack_file_path_list = [os.path.join(attack_dir, attack_key) for attack_key in sorted(os.listdir(attack_dir)) if attack_key.endswith('.json')]
-
-    model_path = "model/vicuna-7b-v1_5/"
-    device = args.device
+    attack_dir = "datasets/vicuna_test"
+    attack_file_path_list = [
+        os.path.join(attack_dir, name)
+        for name in sorted(os.listdir(attack_dir))
+        if name.endswith(".json")
+    ]
+    model_path = "model/vicuna-7b-v1_5"
+    model_dtype = torch.float16 if args.device != "cpu" else torch.float32
     model = AutoModelForCausalLM.from_pretrained(
         model_path,
-        device_map={'': args.device},
+        device_map={"": args.device},
         trust_remote_code=True,
-        torch_dtype=torch.float16
+        torch_dtype=model_dtype,
     )
     tokenizer = AutoTokenizer.from_pretrained(model_path)
-    tokenizer.padding_side = 'left'
-    if tokenizer.chat_template is None:
-        tokenizer.chat_template = (
-            "{% if messages[0]['role'] == 'system' %}"
-            "{% set loop_messages = messages[1:] %}"
-            "{% set system_message = messages[0]['content'] %}"
-            "{% else %}"
-            "{% set loop_messages = messages %}"
-            "{% set system_message = \"A chat between a curious user and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the user's questions.\" %}"
-            "{% endif %}"
-            "{{ system_message + ' ' }}"
-            "{% for message in loop_messages %}"
-            "{% if message['role'] == 'user' %}"
-            "{{ 'USER: ' + message['content'] + ' ' }}"
-            "{% elif message['role'] == 'assistant' %}"
-            "{{ 'ASSISTANT: ' + message['content'] + eos_token + ' ' }}"
-            "{% endif %}"
-            "{% endfor %}"
-            "{% if add_generation_prompt %}"
-            "{{ 'ASSISTANT:' }}"
-            "{% endif %}"
-        )
-    if tokenizer.pad_token is None:
-        if tokenizer.unk_token is not None:
-            tokenizer.pad_token = tokenizer.unk_token
-            tokenizer.pad_token_id = tokenizer.unk_token_id
-        else:
-            tokenizer.pad_token = tokenizer.eos_token
-            tokenizer.pad_token_id = tokenizer.eos_token_id
+    configure_tokenizer(tokenizer)
+    model.eval()
 
     benign_prompts, malicious_prompts = get_train_dataset(
         benign_train_set_list,
-        malicious_train_set_list
+        malicious_train_set_list,
+        args.seed,
     )
     background_layered_activations, all_labels = extract_trainset_hiddenstates(
         your_flag,
-        device,
+        args.device,
         tokenizer,
         model,
         benign_prompts,
-        malicious_prompts
+        malicious_prompts,
+        colon_batch_size,
+        ist_batch_size,
     )
-
     detector = JailbreakDetector(
         model=model,
         tokenizer=tokenizer,
         background_layered_activations=background_layered_activations,
         all_labels=all_labels,
         your_flag=your_flag,
-        n_estimators=n_esti,
+        colon_settings=colon_settings,
+        ist_settings=ist_settings,
+        ist_weight=args.ist_weight,
         random_state=args.seed,
-        max_samples=max_samp,
-        k_nb=ab_k,
-        target_layers=target_layers_indices,
-        metric=now_metric
+        device=args.device,
+        colon_batch_size=colon_batch_size,
+        ist_batch_size=ist_batch_size,
+        rank_batch_size=rank_batch_size,
     )
-    eval(attack_file_path_list)
-    exp_dict = f"{your_flag}/report/"
-    test_dict_name = "vicuna_test"
-    evaluate_attack_auroc(exp_dict, test_dict_name)
+    eval(attack_file_path_list, detector, your_flag, args.seed)
+    evaluate_attack_auroc(f"{your_flag}/report/", "vicuna_test")
+
+
+if __name__ == "__main__":
+    main()
