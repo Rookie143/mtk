@@ -99,7 +99,7 @@ def test_mtk_losses_are_differentiable() -> None:
         assert objective.name == "mtk_%s" % loss_type
 
 
-def test_mtk_surrogate_matches_paper_directions() -> None:
+def test_mtk_surrogate_matches_expected_directions() -> None:
     """MTK L1/L2/L3 should pull toward benign states and away from malicious ones."""
     benign = torch.tensor(
         [

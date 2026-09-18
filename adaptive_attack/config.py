@@ -21,8 +21,8 @@ class AdaptiveGCGConfig(GCGConfig):
     ``1 - lambda`` and ``lambda``.
     """
 
-    # The paper setting uses 1000 optimization steps. Keep this as the direct
-    # default for users who instantiate AdaptiveGCGConfig without CLI overrides.
+    # Direct default for users who instantiate AdaptiveGCGConfig without CLI
+    # overrides.
     num_steps: int = 1000
     sequence_weight: float = 1.0
     feature_weight: float = 1.0

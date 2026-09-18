@@ -534,7 +534,7 @@ class MTKAdaptiveObjective:
         hidden_states: list[Tensor] | tuple[Tensor, ...],
         last_token_index: int,
     ) -> Tensor:
-        """Return one paper-aligned surrogate loss per candidate sample."""
+        """Return one surrogate loss per candidate sample."""
         query = stack_last_token_features(hidden_states, last_token_index).float()
         if query.shape[1:] != self.benign_features.shape[1:]:
             raise ValueError(
@@ -568,9 +568,8 @@ class MTKAdaptiveObjective:
                 layer_loss = benign_mse.mean(dim=1) - malicious_mse.mean(dim=1)
             layer_losses.append(layer_loss)
 
-        # The paper lambda weights L_adv against L_evasion. Averaging over layers
-        # prevents the evasion loss from growing linearly with the number of
-        # layers, keeping lambda comparable across model families.
+        # Averaging over layers prevents the evasion loss from growing linearly
+        # with the number of layers, keeping lambda comparable across models.
         return torch.stack(layer_losses, dim=1).mean(dim=1) * self.scale
 
 
@@ -586,7 +585,7 @@ def run_mtk_attack(
     benign_label: int = 1,
     malicious_label: int = 0,
 ) -> AdaptiveAttackResult:
-    """Run one MTK adaptive attack with the L1/L2/L3 paper surrogate."""
+    """Run one MTK adaptive attack with the L1/L2/L3 surrogate."""
     objective = MTKAdaptiveObjective.from_library(
         feature_library,
         benign_label=benign_label,

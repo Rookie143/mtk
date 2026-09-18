@@ -1,7 +1,6 @@
-"""Run the paper-style single-sample MTK adaptive attack on Llama2.
+"""Run a single-sample MTK adaptive attack on Llama2.
 
-This script mirrors the paper's MTK adaptive-attack sweep for one Llama2
-AdvBench/NanoGCG sample:
+This script sweeps one Llama2 attack sample over loss types and lambda values:
 
     J_i = (1 - lambda) * L_adv + lambda * L_evasion_i
 
@@ -34,7 +33,7 @@ from .judging import judge_attack_success, loose_success_hit, target_prefix_hit
 DEFAULT_MODEL = os.environ.get("MTK_ADAPTIVE_MODEL", "models/Llama-2-7b-chat-hf")
 DEFAULT_BANK = os.environ.get("MTK_ADAPTIVE_BANK", "reference_bank.pt")
 DEFAULT_DATA = os.environ.get("MTK_ADAPTIVE_SAMPLE_FILE", "examples/sample_advbench_format.json")
-DEFAULT_OUTPUT = os.environ.get("MTK_ADAPTIVE_SINGLE_OUTPUT", "llama2_paper_single_results.jsonl")
+DEFAULT_OUTPUT = os.environ.get("MTK_ADAPTIVE_SINGLE_OUTPUT", "llama2_adaptive_single_results.jsonl")
 
 
 def parse_csv_floats(value: str) -> list[float]:
@@ -140,7 +139,7 @@ def extract_prompt_features(
 
 
 def build_config(args: argparse.Namespace, lambda_value: float) -> AdaptiveGCGConfig:
-    """Build a paper-style adaptive GCG config for one lambda."""
+    """Build an adaptive GCG config for one lambda."""
     return AdaptiveGCGConfig(
         num_steps=args.num_steps,
         search_width=args.search_width,
@@ -162,7 +161,7 @@ def build_config(args: argparse.Namespace, lambda_value: float) -> AdaptiveGCGCo
 def main() -> None:
     """Run the one-sample sweep and write JSONL results."""
     parser = argparse.ArgumentParser(
-        description="Paper-style Llama2 MTK adaptive attack sweep for one sample",
+        description="Llama2 MTK adaptive attack sweep for one sample",
     )
     parser.add_argument("--model", default=DEFAULT_MODEL, help="Model path/HF ID. Env: MTK_ADAPTIVE_MODEL")
     parser.add_argument("--feature-library", default=DEFAULT_BANK, help="Reference bank .pt. Env: MTK_ADAPTIVE_BANK")

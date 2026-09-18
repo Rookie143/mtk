@@ -31,7 +31,7 @@ def parse_args() -> argparse.Namespace:
         dest="lambda_value",
         type=float,
         default=None,
-        help="Paper lambda; overrides sequence_weight and feature_weight when set",
+        help="Adaptive-loss lambda; overrides sequence_weight and feature_weight when set",
     )
     return parser.parse_args()
 
@@ -43,8 +43,8 @@ def main() -> None:
         if not 0.0 <= args.lambda_value <= 1.0:
             raise ValueError("lambda must be in [0, 1]")
 
-        # The paper objective uses J=(1-lambda)*L_adv+lambda*L_evasion. Override
-        # both weights here so CLI users cannot create an ambiguous configuration.
+        # The adaptive objective uses J=(1-lambda)*L_adv+lambda*L_evasion.
+        # Override both weights so CLI users cannot create an ambiguous setup.
         args.sequence_weight = 1.0 - args.lambda_value
         args.feature_weight = args.lambda_value
 

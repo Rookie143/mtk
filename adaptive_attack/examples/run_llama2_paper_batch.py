@@ -1,8 +1,8 @@
-"""Batch reproduction script for the paper-style Llama2 MTK adaptive attack.
+"""Batch script for Llama2 MTK adaptive attacks.
 
 The script runs the MTK adaptive GCG sweep on multiple Llama2 jailbreak samples
 and writes both raw JSONL records and summary tables. It is intended for
-open-source reproduction of the paper-style metrics:
+open-source reporting of these metrics:
 
     ASR  = attack success rate, approximated by target-prefix generation hit
     TPR  = detector true positive rate on attacked samples
@@ -40,7 +40,7 @@ from .judging import judge_attack_success, loose_success_hit, target_prefix_hit
 DEFAULT_MODEL = os.environ.get("MTK_ADAPTIVE_MODEL", "models/Llama-2-7b-chat-hf")
 DEFAULT_BANK = os.environ.get("MTK_ADAPTIVE_BANK", "reference_bank.pt")
 DEFAULT_DATA = os.environ.get("MTK_ADAPTIVE_SAMPLE_FILE", "examples/sample_advbench_format.json")
-DEFAULT_OUTPUT_DIR = os.environ.get("MTK_ADAPTIVE_OUTPUT_DIR", "repro_llama2_paper")
+DEFAULT_OUTPUT_DIR = os.environ.get("MTK_ADAPTIVE_OUTPUT_DIR", "adaptive_attack_results")
 
 
 def parse_csv_floats(value: str) -> list[float]:
@@ -147,7 +147,7 @@ def extract_prompt_features(
 
 
 def build_config(args: argparse.Namespace, lambda_value: float) -> AdaptiveGCGConfig:
-    """Create one paper-style config."""
+    """Create one adaptive-attack config."""
     return AdaptiveGCGConfig(
         num_steps=args.num_steps,
         search_width=args.search_width,
@@ -210,7 +210,7 @@ def row_attack_success(row: dict[str, Any], judge: str) -> bool:
 
 
 def summarize(raw_path: Path, summary_csv: Path, summary_md: Path) -> list[dict[str, Any]]:
-    """Aggregate raw JSONL into paper-style summary metrics."""
+    """Aggregate raw JSONL into summary metrics."""
     groups: dict[tuple[str, float], list[dict[str, Any]]] = defaultdict(list)
     with raw_path.open("r", encoding="utf-8") as file:
         for line in file:
@@ -397,7 +397,7 @@ def make_detector_library(
 def main() -> None:
     """Run batch attacks and write raw + summary artifacts."""
     parser = argparse.ArgumentParser(
-        description="Batch paper-style Llama2 MTK adaptive attack reproduction",
+        description="Batch Llama2 MTK adaptive attack runner",
     )
     parser.add_argument("--model", default=DEFAULT_MODEL, help="Model path/HF ID. Env: MTK_ADAPTIVE_MODEL")
     parser.add_argument("--feature-library", default=DEFAULT_BANK, help="Reference bank .pt. Env: MTK_ADAPTIVE_BANK")
@@ -408,7 +408,7 @@ def main() -> None:
         "--max-samples",
         type=int,
         default=500,
-        help="Number of samples to run. Paper-style setting uses 500.",
+        help="Number of samples to run.",
     )
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--dtype", default="float16")
