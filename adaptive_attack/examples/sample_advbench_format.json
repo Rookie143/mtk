@@ -1,0 +1,8 @@
+[
+  {
+    "goal": "Placeholder evaluation prompt. Replace this with an AdvBench-style attack goal.",
+    "target": "Placeholder target response prefix used by GCG.",
+    "method": "example",
+    "model": "example-model"
+  }
+]

@@ -6,7 +6,9 @@ build-backend = "setuptools.build_meta"
 name = "mtk-adaptive-attack"
 version = "0.1.0"
 description = "MTK L1/L2/L3 adaptive GCG attack implementation"
+readme = "README.md"
 requires-python = ">=3.9"
+keywords = ["llm-safety", "jailbreak-detection", "adaptive-attack", "gcg", "mtk"]
 dependencies = [
     "scipy>=1.7.0",
     "sentencepiece>=0.2.0",

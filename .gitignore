@@ -2,3 +2,13 @@ vlm/experimental_results/*
 vlm/useless
 vlm/__pycache__
 vlm/cal_FPR_PRE.py
+
+# Python/cache artifacts
+__pycache__/
+*.py[cod]
+
+# Large local feature banks and generated reproduction artifacts.
+# Publish download links/checksums for these files instead of committing them.
+adaptive_attack/*.pt
+adaptive_attack/*results*.jsonl
+adaptive_attack/repro_*/

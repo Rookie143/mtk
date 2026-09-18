@@ -238,6 +238,181 @@ Main options:
 If `--lambda` is not used, set the two loss weights directly with
 `--sequence-weight` and `--feature-weight`.
 
+## Paper-Style Llama2 Adaptive Attack Reproduction
+
+The repository also includes two Llama2 reproduction helpers:
+
+| Script | Purpose |
+| --- | --- |
+| `examples/run_llama2_paper_single.py` | Run one sample for smoke testing and debugging. |
+| `examples/run_llama2_paper_batch.py` | Run a lambda/loss sweep and write paper-style `ASR`, `TPR`, and `eASR` tables. |
+
+The batch script expects an AdvBench-style JSON list. Each item must contain:
+
+```json
+{
+  "goal": "harmful instruction prompt",
+  "target": "target response prefix used by GCG"
+}
+```
+
+Optional metadata fields such as `method` and `model` are preserved in the raw
+output. The paper-style setting uses 500 attack samples for each attack category.
+For quick trend checks, use fewer samples and clearly label the result as a
+small-scale reproduction.
+
+### Required Local Artifacts
+
+For a clean open-source run, pass these paths explicitly:
+
+| Argument | Meaning |
+| --- | --- |
+| `--model` | Hugging Face Llama2 chat model directory. |
+| `--feature-library` | MTK `reference_bank.pt` generated with the same model/template. |
+| `--sample-file` | JSON list of AdvBench attack samples with `goal` and `target`. |
+| `--output-dir` | Directory where `raw_results.jsonl`, `summary.csv`, and `summary.md` are written. |
+
+The helper scripts also support environment-variable defaults:
+
+| Environment variable | Used as |
+| --- | --- |
+| `MTK_ADAPTIVE_MODEL` | default `--model` |
+| `MTK_ADAPTIVE_BANK` | default `--feature-library` |
+| `MTK_ADAPTIVE_SAMPLE_FILE` | default `--sample-file` |
+| `MTK_ADAPTIVE_OUTPUT_DIR` | default batch `--output-dir` |
+| `MTK_ADAPTIVE_SINGLE_OUTPUT` | default single-run `--output` |
+
+The repository includes `examples/sample_advbench_format.json` only to document
+the expected file structure. Replace it with a real evaluation file before
+running experiments.
+
+Do not commit large `.pt` feature banks or model weights to Git. Publish them via
+a release asset, Git LFS, Hugging Face, or another file host, and include checksums
+and generation instructions.
+
+### Quick Trend Check
+
+This configuration is intended to quickly check whether the lambda trend is
+qualitatively consistent with the paper. It is not the full paper setting.
+
+```bash
+python -m adaptive_attack.examples.run_llama2_paper_batch \
+    --model /path/to/Llama-2-7b-chat-hf \
+    --feature-library /path/to/reference_bank.pt \
+    --sample-file /path/to/advbench_samples.json \
+    --output-dir ./repro_llama2_quick_l3_detector \
+    --max-samples 10 \
+    --loss-types l3 \
+    --lambdas 0.1,0.3,0.5,0.7,0.9 \
+    --num-steps 100 \
+    --search-width 64 \
+    --topk 64 \
+    --batch-size 32 \
+    --detector-max-anchors 200
+```
+
+For a more stable small-scale table:
+
+```bash
+python -m adaptive_attack.examples.run_llama2_paper_batch \
+    --model /path/to/Llama-2-7b-chat-hf \
+    --feature-library /path/to/reference_bank.pt \
+    --sample-file /path/to/advbench_samples.json \
+    --output-dir ./repro_llama2_quick_l3_detector_30 \
+    --max-samples 30 \
+    --loss-types l3 \
+    --lambdas 0.1,0.3,0.5,0.7,0.9 \
+    --num-steps 200 \
+    --search-width 128 \
+    --topk 128 \
+    --batch-size 32 \
+    --detector-max-anchors 200
+```
+
+`--detector-max-anchors` uses a balanced subset of the reference bank to reduce
+runtime. It is useful for debugging and trend checks, but it is not the strict
+paper configuration.
+
+### Paper-Scale Sweep
+
+The paper-style lambda sweep uses `0.1` through `0.9`:
+
+```bash
+python -m adaptive_attack.examples.run_llama2_paper_batch \
+    --model /path/to/Llama-2-7b-chat-hf \
+    --feature-library /path/to/reference_bank.pt \
+    --sample-file /path/to/advbench_samples_500.json \
+    --output-dir ./repro_llama2_paper \
+    --max-samples 500 \
+    --loss-types l1,l2,l3 \
+    --lambdas 0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9 \
+    --num-steps 1000 \
+    --search-width 512 \
+    --topk 256
+```
+
+This is expensive: `500 samples × 3 losses × 9 lambdas = 13,500` attacks.
+Run this in `tmux`/`screen` or on a scheduler, and expect a multi-day or longer
+GPU job depending on hardware and detector settings.
+
+### Metrics
+
+`run_llama2_paper_batch.py` writes one raw JSONL row per attack and aggregates the
+following metrics:
+
+| Metric | Definition in this script |
+| --- | --- |
+| `ASR` | Fraction of attacks where the deterministic generation hits the target response prefix. |
+| `TPR` | Fraction of attacked samples flagged by `MTKDetector` as malicious. |
+| `eASR` | Fraction of attacks that both succeed and are not detected: `attack_success and not detected_by_mtk`. |
+
+The ASR judge is a target-prefix check, which is a reproducible GCG-style
+approximation. If you need a semantic harmfulness judge, run an additional
+external evaluator and report that judge separately.
+
+The output files are:
+
+| File | Contents |
+| --- | --- |
+| `raw_results.jsonl` | Per-attack suffix, generation, losses, detector score/prediction, booleans, and runtime. |
+| `summary.csv` | Machine-readable aggregate table grouped by loss type and lambda, including raw counts. |
+| `summary.md` | Markdown aggregate table for quick inspection, formatted as percentages with counts such as `0.600 (18/30)`. |
+
+By default, generated model responses are stored in `raw_results.jsonl` under the
+`generation` field so failed/successful jailbreak cases can be inspected. Add
+`--exclude-generation` if you want smaller logs or do not want to retain model
+outputs.
+
+For small sample counts, always report the raw numerator and denominator together
+with percentages. For example, write `ASR = 18/30 = 60.0%`, not just `60.0%`.
+
+### Resume And Debugging
+
+The batch script resumes by default: completed `(loss_type, lambda, sample_index)`
+rows in `raw_results.jsonl` are skipped. Use `--no-resume` to force a fresh run.
+
+To regenerate only the summaries from an existing raw file:
+
+```bash
+python -m adaptive_attack.examples.run_llama2_paper_batch \
+    --output-dir ./repro_llama2_paper \
+    --summary-only
+```
+
+For ASR-only speed tests, add `--no-detector`. This skips MTK scoring, so `TPR`
+and `eASR` are reported as `NA`.
+
+### Release Notes For Reproduction Artifacts
+
+Before publishing a release, review `OPEN_SOURCE_CHECKLIST.md`. In particular:
+
+- choose and add a `LICENSE` file;
+- add citation information for the paper/artifact;
+- publish large `.pt` files outside Git with checksums;
+- state the exact number of attack samples used for every reported table;
+- review public `raw_results.jsonl` files because generated model responses may
+  contain unsafe text.
+
 ## MTK Detector
 
 ```python

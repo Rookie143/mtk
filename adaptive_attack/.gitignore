@@ -1,0 +1,19 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local model/data artifacts. Publish these through a release asset,
+# Hugging Face dataset/model repo, Git LFS, or another external host.
+*.pt
+*.pth
+*.bin
+*.safetensors
+
+# Generated experiment outputs.
+*.jsonl
+repro_*/
+outputs/
+results/
