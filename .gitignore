@@ -12,4 +12,3 @@ __pycache__/
 adaptive_attack/*.pt
 adaptive_attack/*results*.jsonl
 adaptive_attack/repro_*/
-adaptive_attack/OPEN_SOURCE_CHECKLIST.md
