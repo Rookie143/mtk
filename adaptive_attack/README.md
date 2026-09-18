@@ -402,17 +402,6 @@ python -m adaptive_attack.examples.run_llama2_paper_batch \
 For ASR-only speed tests, add `--no-detector`. This skips MTK scoring, so `TPR`
 and `eASR` are reported as `NA`.
 
-### Release Notes For Reproduction Artifacts
-
-Before publishing a release, review `OPEN_SOURCE_CHECKLIST.md`. In particular:
-
-- choose and add a `LICENSE` file;
-- add citation information for the paper/artifact;
-- publish large `.pt` files outside Git with checksums;
-- state the exact number of attack samples used for every reported table;
-- review public `raw_results.jsonl` files because generated model responses may
-  contain unsafe text.
-
 ## MTK Detector
 
 ```python
