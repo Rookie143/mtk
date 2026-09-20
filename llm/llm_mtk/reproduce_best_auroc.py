@@ -13,7 +13,7 @@ from types import SimpleNamespace
 TABLE_DIR = Path(__file__).resolve().parent
 REPO_DIR = TABLE_DIR.parent
 ASSET_DIR = TABLE_DIR / "canonical_assets"
-SETTINGS_PATH = TABLE_DIR / "all_models_best_settings_20260915.json"
+SETTINGS_PATH = TABLE_DIR / "settings.json"
 
 if str(REPO_DIR) not in sys.path:
     sys.path.insert(0, str(REPO_DIR))
