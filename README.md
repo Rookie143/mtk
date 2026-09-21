@@ -64,17 +64,24 @@ pip install -e ./adaptive_attack
 
 ### 1. Dataset Preparation
 
-Place datasets in the specified paths (modify paths in [`load_datasets.py`](vlm/load_datasets.py)):
+Place datasets under `vlm/datasets/` (see [`load_datasets.py`](vlm/load_datasets.py)).
 
-| Dataset | Path Example | Purpose |
+#### Training Datasets
+
+| Dataset | Repository Path | Role |
 | --- | --- | --- |
-| [VQA](https://visualqa.org/download.html) | `vlm/datasets/vqa/test2015` | Benign samples (training) |
-| [MM-Vet v2](https://github.com/yuweihao/MM-Vet) | `vlm/datasets/mm-vet-v2` | Benign samples (testing) |
-| [SD-AdvBench](vlm/datasets/sd_advbench/outputs_new) | `vlm/datasets/sd_advbench` | Malicious samples (training) |
-| [MM-SafetyBench](https://huggingface.co/datasets/PKU-Alignment/MM-SafetyBench) | `vlm/datasets/MM-SafetyBench` | Malicious samples (testing) |
-| [FigStep](https://github.com/CryptoAILab/FigStep/tree/main/data/images/SafeBench) | `vlm/datasets/FigStep` | Malicious samples (testing) |
-| [JailBreakV_28K](https://huggingface.co/datasets/JailbreakV-28K/JailBreakV-28k) | `vlm/datasets/JailBreakV_28K` | Malicious samples (testing) |
-| [USB-Overrefusal](https://huggingface.co/datasets/cgjacklin/USB/tree/main) | `vlm/datasets/usb` | Benign samples (testing) |
+| [VQA](https://visualqa.org/download.html) | `vlm/datasets/vqa/test2015` | Benign |
+| [SD-AdvBench](vlm/datasets/sd_advbench/outputs_new) | `vlm/datasets/sd_advbench` | Malicious |
+
+#### Testing Datasets
+
+| Dataset | Repository Path | Role |
+| --- | --- | --- |
+| [MM-Vet v2](https://github.com/yuweihao/MM-Vet) | `vlm/datasets/mm-vet-v2` | Benign |
+| [USB-Overrefusal](https://huggingface.co/datasets/cgjacklin/USB/tree/main) | `vlm/datasets/usb` | Benign |
+| [MM-SafetyBench](https://huggingface.co/datasets/PKU-Alignment/MM-SafetyBench) | `vlm/datasets/MM-SafetyBench` | Malicious |
+| [FigStep](https://github.com/CryptoAILab/FigStep/tree/main/data/images/SafeBench) | `vlm/datasets/FigStep` | Malicious |
+| [JailBreakV_28K](https://huggingface.co/datasets/JailbreakV-28K/JailBreakV-28k) | `vlm/datasets/JailBreakV_28K` | Malicious |
 
 ### 2. Model Weights Preparation
 
@@ -99,51 +106,33 @@ python test_AUROC_qwen.py
 
 ## 🚀 LLM_Quick Start
 
-### 1. Training Datasets Preparation
+### 1. Dataset Preparation
 
-Place **training datasets** in [./datasets/train_data](llm/datasets/train_data):
+#### Training Datasets
 
-| Dataset | Path Example | Purpose |
+| Dataset | Repository Path | Role |
 | --- | --- | --- |
-| [Alpaca ](https://huggingface.co/datasets/gbharti/finance-alpaca) | `llm/datasets/train_data` | Benign samples |
-| [Databricks-Dolly-15k](https://huggingface.co/datasets/databricks/databricks-dolly-15k) | `llm/datasets/train_data` | Benign samples |
-| [Or-Bench_80k](https://huggingface.co/datasets/bench-llm/or-bench) | `llm/datasets/train_data` | Pseudo-Malicious samples |
-| [MaliciousInstruct](https://huggingface.co/datasets/walledai/MaliciousInstruct) | `llm/datasets/train_data` | Malicious samples |
-| [Advbench](https://github.com/llm-attacks/llm-attacks/tree/main/data/advbench) | `llm/datasets/train_data` | Malicious samples |
-| [PKU-SafeRLHF](https://huggingface.co/datasets/PKU-Alignment/PKU-SafeRLHF) | `llm/datasets/train_data` | Malicious samples |
+| [Alpaca](https://huggingface.co/datasets/gbharti/finance-alpaca) | `llm/datasets/train_data` | Benign |
+| [Databricks-Dolly-15k](https://huggingface.co/datasets/databricks/databricks-dolly-15k) | `llm/datasets/train_data` | Benign |
+| [Or-Bench_80k](https://huggingface.co/datasets/bench-llm/or-bench) | `llm/datasets/train_data` | Pseudo-Malicious |
+| [MaliciousInstruct](https://huggingface.co/datasets/walledai/MaliciousInstruct) | `llm/datasets/train_data` | Malicious |
+| [AdvBench](https://github.com/llm-attacks/llm-attacks/tree/main/data/advbench) | `llm/datasets/train_data` | Malicious |
+| [PKU-SafeRLHF](https://huggingface.co/datasets/PKU-Alignment/PKU-SafeRLHF) | `llm/datasets/train_data` | Malicious |
 
-> ⚠️ Note: All datasets should be converted into a unified .txt format.
+> All LLM training datasets are stored in unified `.txt` format.
 
----
+#### Testing Datasets
 
-### 2. Test Datasets Preparation
+| Data | Repository Path | Role |
+| --- | --- | --- |
+| Jailbreak attack datasets | `llm/datasets/{model_name}_test/*_1.json` | Malicious |
+| Benign datasets | `llm/datasets/{model_name}_test/*_0.json` | Benign |
 
-Place **test datasets** under:
+Supported `{model_name}` values: `llama2`, `llama3`, `mistral`, and `vicuna`.
 
-`llm/datasets/{model_name}_test`
+The filename suffix is used as the evaluation label: `_1` for malicious/jailbreak samples and `_0` for benign samples.
 
-where `{model_name}` must be one of:
-
-- `llama2`
-- `llama3`
-- `mistral`
-- `vicuna`
-
-#### File Naming Convention
-
-- **Jailbreak / malicious attack samples**:
-  
-  `{attack_name}_1.json`
-  
-- **Benign samples**:
-  
-  `{benign_name}_0.json`
-  
-
-Here, the suffix `_1` indicates malicious/jailbreak data, and `_0` indicates benign data.  
-This naming convention is required for correct label parsing during evaluation.
-
-### 3. Model Weights Preparation
+### 2. Model Weights Preparation
 
 Download the following large language model weights and place them under:
 
@@ -162,7 +151,7 @@ Required models:
 
 Each model should be stored in its own subdirectory following the Hugging Face standard structure.
 
-### 4. Run Detection
+### 3. Run Detection
 
 ```bash
 cd llm
