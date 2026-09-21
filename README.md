@@ -68,13 +68,13 @@ Place datasets in the specified paths (modify paths in [`load_datasets.py`](vlm/
 
 | Dataset | Path Example | Purpose |
 | --- | --- | --- |
-| [VQA](https://visualqa.org/download.html) | ./datasets/vqa/test2015 | Benign samples (training) |
-| [MM-Vet v2](https://github.com/yuweihao/MM-Vet) | ./datasets/mm-vet-v2 | Benign samples (testing) |
-| [SD-AdvBench](vlm/datasets/sd_advbench/outputs_new) | ./datasets/sd_advbench | Malicious samples (training) |
-| [MM-SafetyBench](https://huggingface.co/datasets/PKU-Alignment/MM-SafetyBench) | ./datasets/MM-SafetyBench | Malicious samples (testing) |
-| [FigStep](https://github.com/CryptoAILab/FigStep/tree/main/data/images/SafeBench) | ./datasets/FigStep | Malicious samples (testing) |
-| [JailBreakV_28K](https://huggingface.co/datasets/JailbreakV-28K/JailBreakV-28k) | ./datasets/JailBreakV_28K | Malicious samples (testing) |
-| [USB-Overrefusal](https://huggingface.co/datasets/cgjacklin/USB/tree/main) | ./datasets/usb | Benign samples (testing) |
+| [VQA](https://visualqa.org/download.html) | `vlm/datasets/vqa/test2015` | Benign samples (training) |
+| [MM-Vet v2](https://github.com/yuweihao/MM-Vet) | `vlm/datasets/mm-vet-v2` | Benign samples (testing) |
+| [SD-AdvBench](vlm/datasets/sd_advbench/outputs_new) | `vlm/datasets/sd_advbench` | Malicious samples (training) |
+| [MM-SafetyBench](https://huggingface.co/datasets/PKU-Alignment/MM-SafetyBench) | `vlm/datasets/MM-SafetyBench` | Malicious samples (testing) |
+| [FigStep](https://github.com/CryptoAILab/FigStep/tree/main/data/images/SafeBench) | `vlm/datasets/FigStep` | Malicious samples (testing) |
+| [JailBreakV_28K](https://huggingface.co/datasets/JailbreakV-28K/JailBreakV_28K) | `vlm/datasets/JailBreakV_28K` | Malicious samples (testing) |
+| [USB-Overrefusal](https://huggingface.co/datasets/cgjacklin/USB/tree/main) | `vlm/datasets/usb` | Benign samples (testing) |
 
 ### 2. Model Weights Preparation
 
@@ -105,12 +105,12 @@ Place **training datasets** in [./datasets/train_data](llm/datasets/train_data):
 
 | Dataset | Path Example | Purpose |
 | --- | --- | --- |
-| [Alpaca ](https://huggingface.co/datasets/gbharti/finance-alpaca) | ./datasets/train_data | Benign samples |
-| [Databricks-Dolly-15k](https://huggingface.co/datasets/databricks/databricks-dolly-15k) | ./datasets/train_data | Benign samples |
-| [Or-Bench_80k](https://huggingface.co/datasets/bench-llm/or-bench) | ./datasets/train_data | Pseudo-Malicious samples |
-| [MaliciousInstruct](https://huggingface.co/datasets/walledai/MaliciousInstruct) | ./datasets/train_data | Malicious samples |
-| [Advbench](https://github.com/llm-attacks/llm-attacks/tree/main/data/advbench) | ./datasets/train_data | Malicious samples |
-| [PKU-SafeRLHF](https://huggingface.co/datasets/PKU-Alignment/PKU-SafeRLHF) | ./datasets/train_data | Malicious samples |
+| [Alpaca ](https://huggingface.co/datasets/gbharti/finance-alpaca) | `llm/datasets/train_data` | Benign samples |
+| [Databricks-Dolly-15k](https://huggingface.co/datasets/databricks/databricks-dolly-15k) | `llm/datasets/train_data` | Benign samples |
+| [Or-Bench_80k](https://huggingface.co/datasets/bench-llm/or-bench) | `llm/datasets/train_data` | Pseudo-Malicious samples |
+| [MaliciousInstruct](https://huggingface.co/datasets/walledai/MaliciousInstruct) | `llm/datasets/train_data` | Malicious samples |
+| [Advbench](https://github.com/llm-attacks/llm-attacks/tree/main/data/advbench) | `llm/datasets/train_data` | Malicious samples |
+| [PKU-SafeRLHF](https://huggingface.co/datasets/PKU-Alignment/PKU-SafeRLHF) | `llm/datasets/train_data` | Malicious samples |
 
 > ⚠️ Note: All datasets should be converted into a unified .txt format.
 
@@ -120,7 +120,7 @@ Place **training datasets** in [./datasets/train_data](llm/datasets/train_data):
 
 Place **test datasets** under:
 
-`./datasets/{model_name}_test`
+`llm/datasets/{model_name}_test`
 
 where `{model_name}` must be one of:
 
@@ -147,7 +147,7 @@ This naming convention is required for correct label parsing during evaluation.
 
 Download the following large language model weights and place them under:
 
-`./model`
+`llm/model`
 
 Required models:
 
