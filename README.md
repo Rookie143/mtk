@@ -5,12 +5,13 @@
 </p>
 
 <p align="center">
-  <a href="https://www.usenix.org/conference/usenixsecurity26/presentation/zhang-hangtao">Paper</a> •
+  <a href="https://www.usenix.org/conference/usenixsecurity26/presentation/zhang-hangtao">Paper</a> 
 </p>
 
 <p align="center">
-  <img src="assets/pipeline.png" width="90%">
+  <img src="assets/pipeline.pdf" width="90%">
 </p>
+
 <p align="center">
   <img src="https://img.shields.io/badge/USENIX-Security-blue">
   <img src="https://img.shields.io/badge/LLM-Jailbreak%20Detection-red">
