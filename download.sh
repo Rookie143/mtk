@@ -3,6 +3,7 @@ set -eu
 
 ROOT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 DOWNLOAD_DIR=${DOWNLOAD_DIR:-"$ROOT_DIR/.downloads"}
+DATA_DIR=${DATA_DIR:-"$ROOT_DIR/vlm/datasets"}
 
 log() {
     printf '\n[%s] %s\n' "$(date '+%H:%M:%S')" "$*"
@@ -47,8 +48,8 @@ if missing:
     sys.exit(1)
 PY
 
-mkdir -p "$DOWNLOAD_DIR"
-cd "$ROOT_DIR"
+mkdir -p "$DOWNLOAD_DIR" "$DATA_DIR"
+cd "$DATA_DIR"
 
 clone_or_update() {
     repo_url=$1
@@ -144,7 +145,7 @@ download_mm_vet_v2() {
     hf_snapshot "whyu/mm-vet-v2" "dataset" "$DOWNLOAD_DIR/mm-vet-v2-dataset"
 
     log "Reconstructing mm-vet-v2/images and mm-vet-v2/non_palette_images"
-    ROOT_DIR="$ROOT_DIR" \
+    DATA_DIR="$DATA_DIR" \
     MMVET_HF_DIR="$DOWNLOAD_DIR/mm-vet-v2-dataset" \
     "$PYTHON" - <<'PY'
 import json
@@ -156,9 +157,9 @@ from pathlib import Path
 import pandas as pd
 from PIL import Image
 
-root = Path(os.environ["ROOT_DIR"])
+data_dir = Path(os.environ["DATA_DIR"])
 hf_dir = Path(os.environ["MMVET_HF_DIR"])
-target = root / "mm-vet-v2"
+target = data_dir / "mm-vet-v2"
 json_path = target / "mm-vet-v2.json"
 images_dir = target / "images"
 non_palette_dir = target / "non_palette_images"
