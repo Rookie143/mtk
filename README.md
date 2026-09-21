@@ -9,11 +9,8 @@ adaptive attack package for evaluating MTK-aware attacks.
 | --- | --- |
 | `llm/llm_mtk` | MTK detection and evaluation scripts for LLMs. |
 | `vlm` | MTK detection and evaluation scripts for VLMs. |
-| `adaptive_attack` | Standalone adaptive GCG attack with `L1`/`L2`/`L3` evasion losses. |
+| [`adaptive_attack`](adaptive_attack/README.md) | Standalone adaptive GCG attack with `L1`/`L2`/`L3` evasion losses. |
 
-If you only need the adaptive attack implementation, see
-[`adaptive_attack/README.md`](adaptive_attack/README.md). The `adaptive_attack`
-directory can be installed and used independently from the rest of this repository.
 
 ## 📋 Environment Requirements
 
