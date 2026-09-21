@@ -85,7 +85,8 @@ class JailbreakDetector:
         )
         scaled_sequence = (ranks - self.mean) / self.std
         anomaly_score = self.if_model.decision_function(scaled_sequence)[0].item()
-        pred_label = 0 if anomaly_score >= 0 else 1
+        # Larger scores indicate more anomalous / malicious samples.
+        pred_label = 1 if anomaly_score >= 0 else 0
 
         return pred_label, anomaly_score
 
