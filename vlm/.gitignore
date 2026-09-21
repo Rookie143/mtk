@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+models/
+datasets/*
+!datasets/.gitkeep
+!datasets/sd_advbench/
+!datasets/sd_advbench/**
+
+experimental_results/
+outputs/
+results/
+*.pt
+*.pth
+*.jsonl
+*.csv.tmp
