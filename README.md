@@ -126,7 +126,7 @@ python test_AUROC_qwen.py
 | Data | Repository Path | Role |
 | --- | --- | --- |
 | Jailbreak attack datasets | `llm/datasets/{model_name}_test/*_1.json` | Malicious |
-| Benign datasets | `llm/datasets/{model_name}_test/*_0.json` | Benign |
+| ToxicChat (benign subset) | `llm/datasets/{model_name}_test/toxic-chat_benign_0.json` | Benign |
 
 Supported `{model_name}` values: `llama2`, `llama3`, `mistral`, and `vicuna`.
 
