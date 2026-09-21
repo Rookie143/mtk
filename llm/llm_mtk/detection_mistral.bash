@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-exec python mtk_mistral.py \
+set -euo pipefail
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+exec python "$script_dir/reproduce_best_auroc.py" mistral \
     --seed 47 \
     --k 10 \
     --n-estimators 500 \

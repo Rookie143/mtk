@@ -1,0 +1,23 @@
+{
+  "llama2": {
+    "seed": 27,
+    "k": 10,
+    "n_estimators": 500,
+    "max_samples": 512,
+    "source": "canonical_records/llama2_seed-27.json"
+  },
+  "llama3": {
+    "seed": 35,
+    "k": 10,
+    "n_estimators": 500,
+    "max_samples": 512,
+    "source": "canonical_records/llama3_seed-35.json"
+  },
+  "mistral": {
+    "seed": 47,
+    "k": 10,
+    "n_estimators": 500,
+    "max_samples": 512,
+    "source": "canonical_records/mistral_seed-47.json"
+  }
+}
