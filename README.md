@@ -64,7 +64,7 @@ pip install -e ./adaptive_attack
 
 ### 1. Dataset Preparation
 
-Place datasets in the specified paths (modify paths in `[load_datasets.py]`(vlm/load_datasets.py)):
+Place datasets in the specified paths (modify paths in [`load_datasets.py`](vlm/load_datasets.py)):
 
 | Dataset | Path Example | Purpose |
 | --- | --- | --- |
