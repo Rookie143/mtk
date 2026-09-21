@@ -99,7 +99,7 @@ python test_AUROC_qwen.py
 
 ### 1. Training Datasets Preparation
 
-Place **training datasets** in ./datasets/train_data:
+Place **training datasets** in [./datasets/train_data](llm/llm_mtk/datasets/train_data):
 
 | Dataset | Path Example | Purpose |
 | --- | --- | --- |
