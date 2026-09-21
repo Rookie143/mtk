@@ -21,6 +21,9 @@ dependencies = [
 dev = [
     "pytest>=7.0",
 ]
+judge = [
+    "openai>=1.0",
+]
 
 [tool.setuptools]
 packages = ["adaptive_attack", "adaptive_attack.examples"]

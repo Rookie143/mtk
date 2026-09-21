@@ -4,7 +4,7 @@ The script runs the MTK adaptive GCG sweep on multiple Llama2 jailbreak samples
 and writes both raw JSONL records and summary tables. It is intended for
 open-source reporting of these metrics:
 
-    ASR  = attack success rate, approximated by target-prefix generation hit
+    ASR  = attack success rate under the selected success judge
     TPR  = detector true positive rate on attacked samples
     eASR = attack success and detector evasion rate
 
@@ -34,7 +34,12 @@ from adaptive_attack import (
     run_mtk_attack,
 )
 
-from .judging import judge_attack_success, loose_success_hit, target_prefix_hit
+from .judging import (
+    gpt4_success_hit,
+    judge_attack_success,
+    loose_success_hit,
+    target_prefix_hit,
+)
 
 
 DEFAULT_MODEL = os.environ.get("MTK_ADAPTIVE_MODEL", "models/Llama-2-7b-chat-hf")
@@ -196,11 +201,17 @@ def iter_raw_records(raw_path: Path) -> list[dict[str, Any]]:
     return records
 
 
-def load_completed_keys(raw_path: Path) -> set[tuple[str, float, int]]:
-    """Read existing JSONL and return completed (loss_type, lambda, sample_index)."""
+def load_completed_keys(
+    raw_path: Path,
+    success_judge: str,
+) -> set[tuple[str, float, int]]:
+    """Return completed keys for the selected attack-success judge."""
     completed: set[tuple[str, float, int]] = set()
     for row in iter_raw_records(raw_path):
-        if row.get("status") == "ok":
+        if (
+            row.get("status") == "ok"
+            and row.get("success_judge", "prefix") == success_judge
+        ):
             completed.add(
                 (
                     str(row["loss_type"]),
@@ -230,11 +241,21 @@ def row_attack_success(row: dict[str, Any], judge: str) -> bool:
     raise ValueError("unknown attack success judge: %s" % judge)
 
 
-def summarize(raw_path: Path, summary_csv: Path, summary_md: Path) -> list[dict[str, Any]]:
-    """Aggregate raw JSONL into summary metrics."""
+def summarize(
+    raw_path: Path,
+    summary_csv: Path,
+    summary_md: Path,
+    success_judge: str | None = None,
+) -> list[dict[str, Any]]:
+    """Aggregate raw JSONL into summary metrics for one judge mode."""
     groups: dict[tuple[str, float], list[dict[str, Any]]] = defaultdict(list)
     for row in iter_raw_records(raw_path):
         if row.get("status") != "ok":
+            continue
+        if (
+            success_judge is not None
+            and row.get("success_judge", "prefix") != success_judge
+        ):
             continue
         groups[(str(row["loss_type"]), float(row["lambda"]))].append(row)
 
@@ -447,9 +468,14 @@ def main() -> None:
     parser.add_argument("--max-new-tokens", type=int, default=64)
     parser.add_argument(
         "--success-judge",
-        choices=("prefix", "loose"),
+        choices=("prefix", "loose", "gpt4"),
         default="loose",
-        help="Which attack-success judge drives ASR/eASR. Both prefix and loose are logged.",
+        help="Attack-success judge for ASR/eASR. Default: loose.",
+    )
+    parser.add_argument(
+        "--gpt4-judge-model",
+        default=os.environ.get("MTK_ADAPTIVE_GPT4_JUDGE_MODEL", "gpt-4"),
+        help="OpenAI model used when --success-judge gpt4.",
     )
     parser.add_argument(
         "--loose-success-threshold",
@@ -490,7 +516,12 @@ def main() -> None:
     summary_md = output_dir / "summary.md"
 
     if args.summary_only:
-        summaries = summarize(raw_path, summary_csv, summary_md)
+        summaries = summarize(
+            raw_path,
+            summary_csv,
+            summary_md,
+            success_judge=args.success_judge,
+        )
         print("summary_rows:", len(summaries))
         print("summary_csv:", summary_csv)
         print("summary_md:", summary_md)
@@ -503,7 +534,11 @@ def main() -> None:
             % (args.max_samples, len(samples), args.sample_file),
             flush=True,
         )
-    completed = set() if args.no_resume else load_completed_keys(raw_path)
+    completed = (
+        set()
+        if args.no_resume
+        else load_completed_keys(raw_path, args.success_judge)
+    )
 
     print("model:", args.model)
     print("feature_library:", args.feature_library)
@@ -577,12 +612,25 @@ def main() -> None:
                             target,
                             threshold=args.loose_success_threshold,
                         )
-                        attack_success = judge_attack_success(
-                            generation,
-                            target,
-                            mode=args.success_judge,
-                            loose_threshold=args.loose_success_threshold,
-                        )
+                        attack_success_gpt4 = None
+                        gpt4_judge_response = None
+                        if args.success_judge == "gpt4":
+                            (
+                                attack_success_gpt4,
+                                gpt4_judge_response,
+                            ) = gpt4_success_hit(
+                                generation=generation,
+                                behavior=prompt,
+                                model=args.gpt4_judge_model,
+                            )
+                            attack_success = attack_success_gpt4
+                        else:
+                            attack_success = judge_attack_success(
+                                generation,
+                                target,
+                                mode=args.success_judge,
+                                loose_threshold=args.loose_success_threshold,
+                            )
                         detector_score = None
                         detector_prediction = None
                         detected_by_mtk = None
@@ -626,6 +674,17 @@ def main() -> None:
                             "detector_prediction": detector_prediction,
                             "attack_success_prefix": bool(attack_success_prefix),
                             "attack_success_loose": bool(attack_success_loose),
+                            "attack_success_gpt4": (
+                                None
+                                if attack_success_gpt4 is None
+                                else bool(attack_success_gpt4)
+                            ),
+                            "gpt4_judge_model": (
+                                args.gpt4_judge_model
+                                if args.success_judge == "gpt4"
+                                else None
+                            ),
+                            "gpt4_judge_response": gpt4_judge_response,
                             "attack_success": bool(attack_success),
                             "detected_by_mtk": None if detected_by_mtk is None else bool(detected_by_mtk),
                             "effective_attack_success": (
@@ -673,10 +732,20 @@ def main() -> None:
                     else:
                         print("error:", row, flush=True)
 
-                summarize(raw_path, summary_csv, summary_md)
+                summarize(
+                    raw_path,
+                    summary_csv,
+                    summary_md,
+                    success_judge=args.success_judge,
+                )
                 print("updated_summary:", summary_md, flush=True)
 
-    summaries = summarize(raw_path, summary_csv, summary_md)
+    summaries = summarize(
+        raw_path,
+        summary_csv,
+        summary_md,
+        success_judge=args.success_judge,
+    )
     print("summary_rows:", len(summaries))
     print("summary_csv:", summary_csv)
     print("summary_md:", summary_md)
