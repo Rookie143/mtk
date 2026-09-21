@@ -180,7 +180,7 @@ bash detection_vicuna.bash
 
 
 If you find MTK useful in your research, please consider citing our paper:
-
+```bibtex
 @inproceedings {320629,
 author = {Hangtao Zhang and Yucheng Zhao and Sishun Liu and Ziqi Zhou and Zeyu Ye and Wei Wan and Minghui Li and Shengshan Hu and Yanjun Zhang and Yi Liu and Leo Yu Zhang},
 title = {Defending Jailbreak Attacks on Large Language Models via Manifold Trajectory Kinetics},
