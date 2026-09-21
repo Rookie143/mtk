@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/pipeline.pdf" width="90%">
+  <img src="pipeline.pdf" width="90%">
 </p>
 
 <p align="center">
