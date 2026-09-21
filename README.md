@@ -7,7 +7,7 @@ adaptive attack package for evaluating MTK-aware attacks.
 
 | Path | Purpose |
 | --- | --- |
-| [`llm`](llm/mtk) | MTK detection and evaluation scripts for LLMs. |
+| [`llm`](llm/llm_mtk) | MTK detection and evaluation scripts for LLMs. |
 | [`vlm`](vlm) | MTK detection and evaluation scripts for VLMs. |
 | [`adaptive_attack`](adaptive_attack) | Standalone adaptive GCG attack with `L1`/`L2`/`L3` evasion losses. |
 
