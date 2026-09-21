@@ -69,13 +69,13 @@ class PyTorchIsolationForest(nn.Module):
         self.random_state_ = check_random_state(random_state)
 
     def fit(self, X, y=None, sample_weight=None):
-        """Train the models with PyTorch tensor input
+        """Train the model with PyTorch tensor input
         Args:
             X: PyTorch tensor with shape [n_samples, n_features]
             y: Ignored (compatibility with scikit-learn API)
             sample_weight: Ignored (compatibility with scikit-learn API)
         Returns:
-            self: Trained models instance
+            self: Trained model instance
         """
         # Input validation
         if not isinstance(X, torch.Tensor):
