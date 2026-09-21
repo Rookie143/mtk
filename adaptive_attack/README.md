@@ -10,6 +10,26 @@ make the prompt hidden states look closer to benign reference features
 
 The package supports three evasion losses: `l1`, `l2`, and `l3`.
 
+
+
+## Adaptive Attack Quick Validation (A lightweight sanity check)
+
+The following quick validation uses Llama2, the `L3` adaptive loss, 30 AdvBench
+samples, and lambda values `0.1`, `0.3`, `0.5`, `0.7`, and `0.9`.
+
+| Loss | Lambda | Samples | ASR (loose) | TPR | eASR (loose) |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| L3 | 0.1 | 30 | 80.0% (24/30) | 96.7% (29/30) | 3.3% (1/30) |
+| L3 | 0.3 | 30 | 70.0% (21/30) | 96.7% (29/30) | 3.3% (1/30) |
+| L3 | 0.5 | 30 | 60.0% (18/30) | 100.0% (30/30) | 0.0% (0/30) |
+| L3 | 0.7 | 30 | 60.0% (18/30) | 96.7% (29/30) | 3.3% (1/30) |
+| L3 | 0.9 | 30 | 56.7% (17/30) | 100.0% (30/30) | 0.0% (0/30) |
+
+- `ASR`: loose attack success rate before MTK filtering.
+- `TPR`: MTK detection rate on generated adversarial prompts.
+- `eASR`: loose effective attack success rate after MTK filtering.
+
+
 ## Install
 
 From the repository root:
