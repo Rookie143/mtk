@@ -73,7 +73,7 @@ Place datasets in the specified paths (modify paths in [`load_datasets.py`](vlm/
 | [SD-AdvBench](vlm/datasets/sd_advbench/outputs_new) | `vlm/datasets/sd_advbench` | Malicious samples (training) |
 | [MM-SafetyBench](https://huggingface.co/datasets/PKU-Alignment/MM-SafetyBench) | `vlm/datasets/MM-SafetyBench` | Malicious samples (testing) |
 | [FigStep](https://github.com/CryptoAILab/FigStep/tree/main/data/images/SafeBench) | `vlm/datasets/FigStep` | Malicious samples (testing) |
-| [JailBreakV_28K](https://huggingface.co/datasets/JailbreakV-28K/JailBreakV_28K) | `vlm/datasets/JailBreakV_28K` | Malicious samples (testing) |
+| [JailBreakV_28K](https://huggingface.co/datasets/JailbreakV-28K/JailBreakV-28k) | `vlm/datasets/JailBreakV_28K` | Malicious samples (testing) |
 | [USB-Overrefusal](https://huggingface.co/datasets/cgjacklin/USB/tree/main) | `vlm/datasets/usb` | Benign samples (testing) |
 
 ### 2. Model Weights Preparation
