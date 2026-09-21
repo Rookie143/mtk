@@ -5,7 +5,6 @@ import os
 import json
 import random
 from tqdm import tqdm
-import time
 
 def _safe_sample(items, sample_num, dataset_name):
     if len(items) < sample_num:
@@ -14,6 +13,42 @@ def _safe_sample(items, sample_num, dataset_name):
             f"but {sample_num} are required. Please check the dataset files and image paths."
         )
     return random.sample(items, sample_num)
+
+def _is_valid_image(path):
+    if not os.path.exists(path):
+        return False
+    try:
+        with Image.open(path) as image:
+            image.verify()
+        with Image.open(path) as image:
+            image.convert("RGB").load()
+        return True
+    except Exception:
+        return False
+
+def _save_image_bytes(image_bytes, path):
+    tmp_path = f"{path}.tmp.{os.getpid()}.png"
+    try:
+        with Image.open(BytesIO(image_bytes)) as image:
+            image = image.convert("RGB")
+            image.save(tmp_path, format="PNG")
+        if not _is_valid_image(tmp_path):
+            return False
+        os.replace(tmp_path, path)
+        return True
+    except Exception:
+        return False
+    finally:
+        if os.path.exists(tmp_path):
+            try:
+                os.remove(tmp_path)
+            except OSError:
+                pass
+
+def _ensure_image_from_bytes(image_bytes, path):
+    if _is_valid_image(path):
+        return True
+    return _save_image_bytes(image_bytes, path)
 
 def split_by_img_tag(s: str) -> tuple:
     delimiter = "<IMG>"
@@ -107,15 +142,12 @@ def load_mm_safety_bench(file_path):
     df = pd.read_parquet(file_path)
     for i, row in tqdm(df.iterrows(), total=len(df), disable=True, desc="Processing images for MM-SafetyBench dataset"):
         img_value = row['image'] if "Text_only" not in file_path else None
+        if not img_value:
+            continue
+        image_path = f"./datasets/MM-SafetyBench/image/{file_flag}_{i}.png"
         try:
-            if os.path.exists(f"./datasets/MM-SafetyBench/image/{file_flag}_{i}.png"):
-                pass
-            else:
-                image = Image.open(BytesIO(img_value)).convert("RGB")
-                image.save(f"./datasets/MM-SafetyBench/image/{file_flag}_{i}.png")
-                time.sleep(0.05)
-            if img_value:
-                dataset.append({"txt": row['question'], "img": f"./datasets/MM-SafetyBench/image/{file_flag}_{i}.png", "toxicity": 1})
+            if _ensure_image_from_bytes(img_value, image_path):
+                dataset.append({"txt": row['question'], "img": image_path, "toxicity": 1})
         except:
             continue
     return dataset
