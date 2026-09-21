@@ -1,7 +1,26 @@
-# MTK
+# MTK: Defending Jailbreak Attacks on Large Language Models via Manifold Trajectory Kinetics
 
-This repository contains the MTK jailbreak detection implementation and a standalone
-adaptive attack package for evaluating MTK-aware attacks.
+<p align="center">
+  <b>Official implementation of our USENIX Security paper</b>
+</p>
+
+<p align="center">
+  <a href="PAPER_LINK">Paper</a> •
+  <a href="ARXIV_LINK">arXiv</a> •
+  <a href="#-quick-start">Quick Start</a> •
+  <a href="#-citation">Citation</a>
+</p>
+
+<p align="center">
+  <img src="assets/pipeline.png" width="90%">
+</p>
+<p align="center">
+  <img src="https://img.shields.io/badge/USENIX-Security-blue">
+  <img src="https://img.shields.io/badge/LLM-Jailbreak%20Detection-red">
+  <img src="https://img.shields.io/badge/VLM-Supported-green">
+  <img src="https://img.shields.io/badge/PyTorch-supported-orange">
+</p>
+
 
 ## Repository Structure
 
