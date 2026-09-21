@@ -166,27 +166,48 @@ def build_config(args: argparse.Namespace, lambda_value: float) -> AdaptiveGCGCo
     )
 
 
+def iter_raw_records(raw_path: Path) -> list[dict[str, Any]]:
+    """Read raw result records from JSONL or concatenated/multiline JSON."""
+    if not raw_path.exists():
+        return []
+
+    text = raw_path.read_text(encoding="utf-8")
+    decoder = json.JSONDecoder()
+    records: list[dict[str, Any]] = []
+    index = 0
+    while index < len(text):
+        while index < len(text) and text[index].isspace():
+            index += 1
+        if index >= len(text):
+            break
+        try:
+            record, end = decoder.raw_decode(text, index)
+        except json.JSONDecodeError as error:
+            trailing = text[index:].strip()
+            if not trailing:
+                break
+            raise ValueError(
+                "failed to parse raw results near byte %d: %s"
+                % (index, error)
+            ) from error
+        if isinstance(record, dict):
+            records.append(record)
+        index = end
+    return records
+
+
 def load_completed_keys(raw_path: Path) -> set[tuple[str, float, int]]:
     """Read existing JSONL and return completed (loss_type, lambda, sample_index)."""
     completed: set[tuple[str, float, int]] = set()
-    if not raw_path.exists():
-        return completed
-    with raw_path.open("r", encoding="utf-8") as file:
-        for line in file:
-            if not line.strip():
-                continue
-            try:
-                row = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            if row.get("status") == "ok":
-                completed.add(
-                    (
-                        str(row["loss_type"]),
-                        float(row["lambda"]),
-                        int(row["sample_index"]),
-                    )
+    for row in iter_raw_records(raw_path):
+        if row.get("status") == "ok":
+            completed.add(
+                (
+                    str(row["loss_type"]),
+                    float(row["lambda"]),
+                    int(row["sample_index"]),
                 )
+            )
     return completed
 
 
@@ -212,14 +233,10 @@ def row_attack_success(row: dict[str, Any], judge: str) -> bool:
 def summarize(raw_path: Path, summary_csv: Path, summary_md: Path) -> list[dict[str, Any]]:
     """Aggregate raw JSONL into summary metrics."""
     groups: dict[tuple[str, float], list[dict[str, Any]]] = defaultdict(list)
-    with raw_path.open("r", encoding="utf-8") as file:
-        for line in file:
-            if not line.strip():
-                continue
-            row = json.loads(line)
-            if row.get("status") != "ok":
-                continue
-            groups[(str(row["loss_type"]), float(row["lambda"]))].append(row)
+    for row in iter_raw_records(raw_path):
+        if row.get("status") != "ok":
+            continue
+        groups[(str(row["loss_type"]), float(row["lambda"]))].append(row)
 
     summaries: list[dict[str, Any]] = []
     for (loss_type, lambda_value), rows in sorted(groups.items()):
