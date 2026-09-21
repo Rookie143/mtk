@@ -23,7 +23,7 @@
 
 | Path | Purpose |
 | --- | --- |
-| [`llm`](llm/llm_mtk) | MTK detection and evaluation scripts for LLMs. |
+| [`llm`](llm) | MTK detection and evaluation scripts for LLMs. |
 | [`vlm`](vlm) | MTK detection and evaluation scripts for VLMs. |
 | [`adaptive_attack`](adaptive_attack) | Standalone adaptive attack against MTK with `L1`/`L2`/`L3` evasion losses. |
 
@@ -46,15 +46,15 @@
 git clone https://github.com/Rookie143/mtk.git
 cd mtk/vlm
 
-# Install vlm core dependencies
+# Install VLM core dependencies
 pip install -r requirements.txt
 
-#Install llm core dependencies
-cd mtk/llm/llm_mtk
+# Install LLM core dependencies
+cd ../llm
 pip install -r requirements.txt
 ```
 
-To install the adaptive attack package:
+To install the adaptive attack package from the repository root:
 
 ```bash
 pip install -e ./adaptive_attack
@@ -74,7 +74,7 @@ Place datasets in the specified paths (modify paths in [`load_datasets.py`](vlm/
 | [MM-SafetyBench](https://huggingface.co/datasets/PKU-Alignment/MM-SafetyBench) | ./datasets/MM-SafetyBench | Malicious samples (testing) |
 | [FigStep](https://github.com/CryptoAILab/FigStep/tree/main/data/images/SafeBench) | ./datasets/FigStep | Malicious samples (testing) |
 | [JailBreakV_28K](https://huggingface.co/datasets/JailbreakV-28K/JailBreakV-28k) | ./datasets/JailBreakV_28K | Malicious samples (testing) |
-| [USB-Overrefusal](https://huggingface.co/datasets/cgjacklin/USB/tree/main) | ./datasets/MM-SafetyBench | Benign samples (testing) |
+| [USB-Overrefusal](https://huggingface.co/datasets/cgjacklin/USB/tree/main) | ./datasets/usb | Benign samples (testing) |
 
 ### 2. Model Weights Preparation
 
@@ -88,6 +88,8 @@ Download multimodal model weights and place them in the specified paths (modify 
 ### 3. Run Detection
 
 ```bash
+cd vlm
+
 # Run jailbreak detection evaluation for LLaVA
 python test_AUROC_llava.py 
 
@@ -99,12 +101,11 @@ python test_AUROC_qwen.py
 
 ### 1. Training Datasets Preparation
 
-Place **training datasets** in [./datasets/train_data](llm/llm_mtk/datasets/train_data):
+Place **training datasets** in [./datasets/train_data](llm/datasets/train_data):
 
 | Dataset | Path Example | Purpose |
 | --- | --- | --- |
 | [Alpaca ](https://huggingface.co/datasets/gbharti/finance-alpaca) | ./datasets/train_data | Benign samples |
-| [Databricks-Dolly-15k](https://huggingface.co/datasets/databricks/databricks-dolly-15k) | ./datasets/train_data | Benign samples |
 | [Databricks-Dolly-15k](https://huggingface.co/datasets/databricks/databricks-dolly-15k) | ./datasets/train_data | Benign samples |
 | [Or-Bench_80k](https://huggingface.co/datasets/bench-llm/or-bench) | ./datasets/train_data | Pseudo-Malicious samples |
 | [MaliciousInstruct](https://huggingface.co/datasets/walledai/MaliciousInstruct) | ./datasets/train_data | Malicious samples |
@@ -164,13 +165,15 @@ Each model should be stored in its own subdirectory following the Hugging Face s
 ### 4. Run Detection
 
 ```bash
+cd llm
+
 # Run jailbreak detection evaluation for llama2
 bash detection_llama2.bash
 
 # Run jailbreak detection evaluation for llama3
 bash detection_llama3.bash
 
-# Run jailbreak detection evaluation for mitstral
+# Run jailbreak detection evaluation for mistral
 bash detection_mistral.bash
 
 # Run jailbreak detection evaluation for vicuna

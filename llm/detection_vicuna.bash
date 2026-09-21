@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-exec python mtk_vicuna.py \
+set -euo pipefail
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+exec python "$script_dir/mtk_vicuna.py" \
     --seed 56 \
     --colon-k 10 \
     --colon-n-estimators 500 \

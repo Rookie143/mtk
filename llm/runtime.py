@@ -9,7 +9,7 @@ import torch
 
 CODE_DIR = Path(__file__).resolve().parent
 REPO_DIR = CODE_DIR.parent
-LLM_DIR = REPO_DIR.parent
+LLM_DIR = CODE_DIR
 
 
 def parse_args(model, seed, k, n_estimators, max_samples):
@@ -27,7 +27,7 @@ def parse_args(model, seed, k, n_estimators, max_samples):
 
 
 def configure(args):
-    os.chdir(REPO_DIR)
+    os.chdir(CODE_DIR)
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)

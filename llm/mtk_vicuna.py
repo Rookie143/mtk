@@ -25,7 +25,7 @@ from extract_trainset_hiddenstates_vicuna import (
 
 
 HERE = Path(__file__).resolve().parent
-REPO = HERE.parent
+REPO = HERE
 
 
 def parse_args(argv=None):

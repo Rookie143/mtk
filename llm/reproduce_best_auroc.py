@@ -13,8 +13,8 @@ REPO_DIR = TABLE_DIR.parent
 ASSET_DIR = TABLE_DIR / "canonical_assets"
 SETTINGS_PATH = TABLE_DIR / "settings.json"
 
-if str(REPO_DIR) not in sys.path:
-    sys.path.insert(0, str(REPO_DIR))
+if str(TABLE_DIR) not in sys.path:
+    sys.path.insert(0, str(TABLE_DIR))
 
 import canonical_best_auroc as base
 import canonical_model_protocols as optimized
@@ -23,22 +23,22 @@ import canonical_model_protocols as optimized
 MODEL_LAYOUT = {
     "llama2": {
         "protocol_root": ASSET_DIR / "llama2",
-        "model_path": REPO_DIR / "model/llama2",
-        "test_dir": REPO_DIR / "datasets/llama2_test",
+        "model_path": TABLE_DIR / "model/llama2",
+        "test_dir": TABLE_DIR / "datasets/llama2_test",
         "benign_file": "toxic-chat_benign_0.json",
         "feature_endpoint": "last_token_native_llama2_chat_template",
     },
     "llama3": {
         "protocol_root": ASSET_DIR / "llama3",
-        "model_path": REPO_DIR / "model/llama3",
-        "test_dir": REPO_DIR / "datasets/llama3_test",
+        "model_path": TABLE_DIR / "model/llama3",
+        "test_dir": TABLE_DIR / "datasets/llama3_test",
         "benign_file": "toxic-chat_benign_0.json",
         "feature_endpoint": "last_token_native_llama3_chat_template",
     },
     "mistral": {
         "protocol_root": ASSET_DIR / "mistral",
-        "model_path": REPO_DIR / "model/mistral_7b",
-        "test_dir": REPO_DIR / "datasets/mistral_test",
+        "model_path": TABLE_DIR / "model/mistral_7b",
+        "test_dir": TABLE_DIR / "datasets/mistral_test",
         "benign_file": "toxic-chat_benign_0.json",
         "feature_endpoint": "mistral_slash_token_embedding_plus_layers_1_31_project_compatible",
     },
@@ -138,7 +138,7 @@ def rebuild_rank_cache(
 
 
 def recorded_result(model: str, settings: dict) -> tuple[Path, dict]:
-    source = REPO_DIR / settings[model]["source"]
+    source = TABLE_DIR / settings[model]["source"]
     return source, load_json(source)
 
 

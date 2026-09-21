@@ -11,7 +11,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import canonical_best_auroc as base
 
 HERE = Path(__file__).resolve().parent / "canonical_assets"
-REPO = Path(__file__).resolve().parent.parent
+REPO = Path(__file__).resolve().parent
 
 VICUNA_CHAT_TEMPLATE = (
     "{% if messages[0]['role'] == 'system' %}"
