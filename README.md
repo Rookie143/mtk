@@ -1,12 +1,11 @@
 # MTK: Defending Jailbreak Attacks on Large Language Models via Manifold Trajectory Kinetics
 
 <p align="center">
-  <b>Implementation of our USENIX Security paper</b>
+    <a href="https://www.usenix.org/conference/usenixsecurity26/presentation/zhang-hangtao">Paper</a> 
+  <b>USENIX Security 2026</b>
 </p>
 
-<p align="center">
-  <a href="https://www.usenix.org/conference/usenixsecurity26/presentation/zhang-hangtao">Paper</a> 
-</p>
+
 
 <p align="center">
   <img src="pipeline.png" width="90%">
