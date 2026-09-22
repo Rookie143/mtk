@@ -1,218 +1,134 @@
-import os
-from JailbreakDetector_llama2 import JailbreakDetector
-import torch
-import sys
-from tqdm import tqdm
-from transformers import AutoModelForCausalLM, AutoTokenizer
-import random
+import argparse
+import csv
 import json
-from runtime import LLM_DIR, configure, label_from_path, parse_args
-from Indicator_analysis_drawing import *
-from extract_AC_json import extract_accuracy_to_excel
-from extract_trainset_hiddenstates_llama2 import extract_trainset_hiddenstates
+from pathlib import Path
+
+import feature_protocol as sampling
+from JailbreakDetector_llama2 import JailbreakDetector
 from draw_auroc import evaluate_attack_auroc
-try:
-    sys.path.append(str(LLM_DIR))
-    from utils.string_utils import load_conversation_template, autodan_SuffixManager
-except ImportError as e:
-    sys.exit(1)
+from extract_trainset_hiddenstates_llama2 import ATTACK_FILES, extract_trainset_hiddenstates
+
+HERE = Path(__file__).resolve().parent
+PROJECT = HERE
+MODEL = "llama2"
+ATTACK_DIR = PROJECT / "datasets/llama2_test"
+
+
+def parse_args(argv=None):
+    selected = json.loads((HERE / "configs.json").read_text(encoding="utf-8"))[MODEL]
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--seed", type=int, default=selected["seed"])
+    parser.add_argument("--k", type=int, default=selected["k"])
+    parser.add_argument("--n-estimators", type=int, default=selected["n_estimators"])
+    parser.add_argument("--max-samples", type=int, default=selected["max_samples"])
+    parser.add_argument("--device", default="cuda:0")
+    parser.add_argument("--dtype", choices=("float16", "bfloat16", "float32"), default="float16")
+    parser.add_argument("--batch-size", type=int, default=16)
+    parser.add_argument("--output-dir", type=Path, default=HERE / "results" / MODEL)
+    parser.add_argument("--rebuild-cache", action="store_true")
+    parser.add_argument("--force-rebuild-cache", action="store_true")
+    args = parser.parse_args(argv)
+    if min(args.k, args.n_estimators, args.max_samples, args.batch_size) < 1:
+        parser.error("k, n-estimators, max-samples, and batch-size must be positive")
+    return args
+
 
 def list_available_attacks(attack_dir):
-    if not os.path.isdir(attack_dir):
-        return []
-    files = [f for f in os.listdir(attack_dir) if f.lower().endswith('.json')]
-    return [os.path.splitext(f)[0] for f in sorted(files)]
+    paths = sorted(attack_dir / name for name in ATTACK_FILES)
+    if any(not path.is_file() for path in paths):
+        raise FileNotFoundError("Selected attack data is missing")
+    return paths
 
 
-def load_prompts_from_attack_json(file_path: str):
-    prompts = []
-    true_label = label_from_path(file_path)
-    try:
-        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
-            data = json.load(f)
-    except json.JSONDecodeError:
-        with open(file_path, 'r', encoding='gbk', errors='ignore') as f:
-            data = json.load(f)
-    for item in data:
-        if not isinstance(item, dict):
-            continue
-        prompt = item.get('jailbreak')
-        if prompt and isinstance(prompt, str):
-            prompts.append({"prompt": prompt, "true_label": true_label})
-    return prompts
+def load_prompts_from_attack_json(file_path, seed):
+    records = sampling.load_records(file_path)
+    return sampling.sample_records(records, seed, sampling.method_name(file_path))
 
 
 def get_train_dataset(benign_path_list, malicious_path_list):
-    benign_prompts = []
-    malicious_prompts = []
-    for b_path in benign_path_list:
-        with open(b_path[0], "r", errors='ignore') as b_f:
-            b_f_content = b_f.readlines()
-            benign_prompts.extend(random.sample(b_f_content, min(b_path[1], len(b_f_content))))
-    for m_path in malicious_path_list:
-        with open(m_path[0], "r") as m_f:
-            m_f_content = m_f.readlines()
-            malicious_prompts.extend(random.sample(m_f_content, min(m_path[1], len(m_f_content))))
-    return benign_prompts, malicious_prompts
-
-
-def predict(prompt_text):
-    pred_label_str, pred_label, anomaly_score = detector.predict(prompt_text=prompt_text, return_score=True)
-    return pred_label_str, pred_label, anomaly_score
-
-
-def eval(attack_file_path_list):
-    def get_last_two_levels(path):
-        normalized_path = os.path.normpath(path)
-        path_parts = normalized_path.split(os.sep)
-        last_two_parts = path_parts[-2:] if len(path_parts) >= 2 else path_parts
-        dir_name = last_two_parts[0]
-        file_name = last_two_parts[1] if len(last_two_parts) > 1 else ""
-        file_name_without_ext = os.path.splitext(file_name)[0]
-        return f"{dir_name}_{file_name_without_ext}"
-
-    def is_already_detected(attack_key, your_flag):
-        if not os.path.exists(f"./{your_flag}/report"):
-            return False
-        report_file = os.path.join(f"./{your_flag}/report", f"{attack_key}_report.json")
-        return os.path.exists(report_file)
-
-    for attack_file_path in tqdm(attack_file_path_list, desc="Evaluating attack types"):
-        results_detail = []
-        current_attack_key = get_last_two_levels(attack_file_path)
-
-        if is_already_detected(current_attack_key, your_flag):
-            continue
-
-        if os.path.basename(attack_file_path) == "autodan_1.json":
-            attack_key = current_attack_key
-            with open(attack_file_path, 'r', encoding='utf-8') as f:
-                autodan_data = json.load(f)
-
-            if not isinstance(autodan_data, list):
-                continue
-
-            conv_template = load_conversation_template(template_name)
-            total = len(autodan_data)
-            if total > 500:
-                autodan_data = random.sample(autodan_data, 500)
-            total = len(autodan_data)
-            for i, item in enumerate(tqdm(autodan_data, desc="Predicting AutoDAN samples")):
-                goal = (item.get('goal') or item.get('instruction') or "").strip()
-                jailbreak = (item.get('jailbreak') or "").strip()
-                p_suffix = jailbreak[len(goal):].strip() if len(jailbreak) >= len(goal) else jailbreak
-                target = item.get('target')
-
-                s_manager = autodan_SuffixManager(
-                    tokenizer=tokenizer,
-                    conv_template=conv_template,
-                    instruction=goal,
-                    target=target,
-                    adv_string=p_suffix
-                )
-                input_ids = s_manager.get_input_ids(adv_string=p_suffix)
-
-                pred_label_str, pred_label, anomaly_score = detector.predict(input_ids=input_ids, return_score=True)
-
-                results_detail.append({
-                    "Sample_Index": i + 1,
-                    "prompt": jailbreak[:500] + "..." if len(jailbreak) > 500 else jailbreak,
-                    "True_Label": 1,
-                    "Predicted_Label": pred_label,
-                    "Anomaly_Score": round(anomaly_score, 4),
-                    "Prediction_Result": pred_label_str
-                })
-
-        else:
-            attack_key = current_attack_key
-            test_samples = load_prompts_from_attack_json(attack_file_path)
-            if len(test_samples) == 0:
-                continue
-            total = len(test_samples)
-            if len(test_samples) > 500:
-                test_samples = random.sample(test_samples, 500)
-            total = len(test_samples)
-
-            for idx, sample in enumerate(tqdm(test_samples, desc="Predicting normal attack samples")):
-                prompt = sample["prompt"]
-                true_label = sample["true_label"]
-
-                pred_label_str, pred_label, anomaly_score = detector.predict(prompt_text=prompt, return_score=True)
-
-                results_detail.append({
-                    "Sample_Index": idx + 1,
-                    "prompt": prompt[:500] + "..." if len(prompt) > 500 else prompt,
-                    "True_Label": true_label,
-                    "Predicted_Label": pred_label,
-                    "Anomaly_Score": round(anomaly_score, 4),
-                    "Prediction_Result": pred_label_str
-                })
-        generate_report(attack_key, results_detail, your_flag, total)
-    extract_accuracy_to_excel(your_flag)
-
-
-if __name__ == '__main__':
-    import time
-
-    start_time = time.time()
-    args = parse_args("llama2", 27, 10, 500, 512)
-    configure(args)
-    your_flag = f"{args.output_dir}/seed-{args.seed}_k-{args.k}_trees-{args.n_estimators}_samples-{args.max_samples}"
-
-    benign_train_set_list = [
-        ["datasets/train_data/databricks-dolly-15k.txt", 300],
-        ["datasets/train_data/alpaca.txt", 300],
-        ["datasets/train_data/non_refusal_prompts_with_responses_80k.txt", 200],
-    ]
-    malicious_train_set_list = [
-        ['datasets/train_data/AdvBench.txt', 100],
-        ['datasets/train_data/MaliciousInstruct.txt', 100],
-        ['datasets/train_data/PKU-SafeRLHF-prompts_3-6k.txt', 600],
-    ]
-
-    template_name = 'llama-2'
-    attack_dir = "datasets/llama2_test"
-    attack_file_path_list = [os.path.join(attack_dir, attack_key) for attack_key in sorted(os.listdir(attack_dir)) if attack_key.endswith('.json')]
-
-    model_path = "model/llama2/"
-    device = args.device
-    model = AutoModelForCausalLM.from_pretrained(
-        model_path,
-        device_map={'': args.device},
-        trust_remote_code=True,
-        torch_dtype=torch.float16
+    return (
+        [(PROJECT / path, count) for path, count in benign_path_list],
+        [(PROJECT / path, count) for path, count in malicious_path_list],
     )
-    tokenizer = AutoTokenizer.from_pretrained(model_path)
-    tokenizer.padding_side = 'left'
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
-        tokenizer.pad_token_id = tokenizer.eos_token_id
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
-    benign_prompts, malicious_prompts = get_train_dataset(
-        benign_train_set_list,
-        malicious_train_set_list
+
+
+def predict(detector):
+    return detector.score_all()
+
+
+def eval(attack_file_path_list, detector, seed, report_dir):
+    for path in report_dir.glob("*_results_detail.csv"):
+        path.unlink()
+    rows = detector.rows
+    scores = predict(detector)
+    datasets = [ATTACK_DIR / "toxic-chat_benign_0.json"] + attack_file_path_list
+    for file_path in datasets:
+        dataset = sampling.method_name(file_path)
+        expected_indices = [
+            row["source_index"] for row in load_prompts_from_attack_json(file_path, seed)
+        ]
+        selected = [
+            (row, float(score)) for row, score in zip(rows, scores)
+            if row["dataset"] == dataset
+        ]
+        if [row["source_index"] for row, _ in selected] != expected_indices:
+            raise ValueError(f"Test selection mismatch: {dataset}")
+        role = "benign" if file_path.name == "toxic-chat_benign_0.json" else "attack"
+        if any(row["role"] != role for row, _ in selected):
+            raise ValueError(f"Test label mismatch: {dataset}")
+        suffix = "0" if role == "benign" else "1"
+        output = report_dir / f"{MODEL}_test_{dataset}_{suffix}_results_detail.csv"
+        with output.open("w", newline="", encoding="utf-8") as stream:
+            writer = csv.writer(stream)
+            writer.writerow(("Sample_Index", "Source_Index", "True_Label", "Predicted_Label", "Anomaly_Score"))
+            for index, (row, score) in enumerate(selected, 1):
+                writer.writerow((index, row["source_index"], int(role == "attack"), int(score < 0), score))
+    evaluate_attack_auroc(str(report_dir), f"{MODEL}_test")
+    with (report_dir / "all_attack_auroc_results.csv").open(
+        newline="", encoding="utf-8-sig"
+    ) as stream:
+        per_attack = {row["Attack Method"]: float(row["AUROC"]) for row in csv.DictReader(stream)}
+    return sum(per_attack.values()) / len(per_attack), per_attack
+
+
+def main(argv=None):
+    args = parse_args(argv)
+    setting = (
+        f"seed-{args.seed}_k-{args.k}_"
+        f"trees-{args.n_estimators}_samples-{args.max_samples}"
     )
-    background_layered_activations, all_labels = extract_trainset_hiddenstates(
-        your_flag,
-        device,
-        tokenizer,
-        model,
-        benign_prompts,
-        malicious_prompts
+    report_dir = args.output_dir.resolve() / setting / "report"
+    report_dir.mkdir(parents=True, exist_ok=True)
+    benign_train_set_list, malicious_train_set_list = get_train_dataset(
+        [
+            ("datasets/train_data/databricks-dolly-15k.txt", 300),
+            ("datasets/train_data/alpaca.txt", 300),
+            ("datasets/train_data/non_refusal_prompts_with_responses_80k.txt", 200),
+        ],
+        [
+            ("datasets/train_data/AdvBench.txt", 100),
+            ("datasets/train_data/MaliciousInstruct.txt", 100),
+            ("datasets/train_data/PKU-SafeRLHF-prompts_3-6k.txt", 600),
+        ],
+    )
+    attack_file_path_list = list_available_attacks(ATTACK_DIR)
+    rank_data = extract_trainset_hiddenstates(
+        args.seed, args.device, args.dtype, args.batch_size,
+        benign_train_set_list, malicious_train_set_list,
+        args.rebuild_cache, args.force_rebuild_cache, k=args.k,
     )
     detector = JailbreakDetector(
-        model=model,
-        tokenizer=tokenizer,
-        background_layered_activations=background_layered_activations,
-        all_labels=all_labels,
-        your_flag=your_flag,
+        rank_data=rank_data,
         n_estimators=args.n_estimators,
         random_state=args.seed,
         max_samples=args.max_samples,
-        k_nb=args.k
+        k_nb=args.k,
     )
-    eval(attack_file_path_list)
-    exp_dict = f"{your_flag}/report/"
-    test_dict_name = "llama2_test"
-    evaluate_attack_auroc(exp_dict, test_dict_name)
+    mean, per_attack = eval(attack_file_path_list, detector, args.seed, report_dir)
+    print(f"{MODEL} seed {args.seed}: mean AUROC {mean:.16f}, SAA AUROC {per_attack['saa']:.6f}")
+    print(f"AUROC report: {report_dir / 'all_attack_auroc_results.csv'}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

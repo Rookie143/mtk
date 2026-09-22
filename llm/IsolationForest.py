@@ -1,11 +1,3 @@
-"""PyTorch Isolation Forest used by MTK.
-
-This is the repository implementation with a version-independent fitted-state
-check.  The released implementation called scikit-learn's ``check_is_fitted``
-on a plain ``torch.nn.Module``; recent scikit-learn versions reject that even
-after the forest has been fitted.
-"""
-
 from __future__ import annotations
 
 import numpy as np

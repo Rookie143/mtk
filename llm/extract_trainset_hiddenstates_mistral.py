@@ -1,100 +1,80 @@
-import torch
+from contextlib import redirect_stderr, redirect_stdout
 import os
-from tqdm import tqdm
 
-def extract_trainset_hiddenstates(your_flag, device, tokenizer, model, benign_prompts, malicious_prompts):
-    load_path = f"./{your_flag}/saved_features_and_labels.pt"
-    need_extract = True
+import torch
 
-    if os.path.exists(load_path):
-        try:
-            loaded_data = torch.load(load_path, map_location=device)
-            background_layered_activations = loaded_data["background_layered_activations"]
-            all_labels = loaded_data["labels"]
-            loaded_layers = background_layered_activations.shape[1]
-            current_model_layers = model.config.num_hidden_layers
-            if loaded_layers != current_model_layers:
-                need_extract = True
-            else:
-                need_extract = False
-        except Exception as e:
-            need_extract = True
+from feature_protocol import FeatureProtocol, render_prompts, set_determinism
 
-    if need_extract:
-        all_activations = []
 
-        def process_batch(prompts, desc_text):
-            batch_acts = []
-            for sentence in tqdm(prompts, desc=desc_text):
-                messages = [{"role": "user", "content": sentence}]
-                input_ids = tokenizer.apply_chat_template(
-                    messages,
-                    add_generation_prompt=True,
-                    return_tensors="pt",
-                    return_dict=False
-                ).to(model.device)
+ATTACK_FILES = ["JailJudge_all_1.json", "ijp_0.json", "nonagcg_1.json", "autodan_1.json", "drattack_1.json", "pair_1.json", "pap_gpt3.5_1.json", "pap_gpt4_1.json", "pap_llama2_1.json", "saa_1.json", "tap_1.json", "zulu_1.json"]
+TRAINING_ENDPOINT = "mistral_slash_token_transformer_layers_1_32"
+TEST_ENDPOINT = "mistral_slash_token_embedding_plus_layers_1_31_project_compatible"
 
-                if tokenizer.pad_token_id is not None:
-                    attention_mask = (input_ids != tokenizer.pad_token_id).long().to(model.device)
-                else:
-                    attention_mask = torch.ones_like(input_ids).to(model.device)
 
-                with torch.no_grad():
-                    outputs = model(
-                        input_ids=input_ids,
-                        attention_mask=attention_mask,
-                        output_hidden_states=True,
-                        return_dict=True
-                    )
-                    hidden_states = outputs.hidden_states[1:]
+def endpoint_indices(tokenizer, input_ids, attention_mask):
+    targets = []
+    for row in range(input_ids.shape[0]):
+        valid = torch.nonzero(attention_mask[row], as_tuple=True)[0]
+        target = int(valid[-1])
+        token = tokenizer.decode([int(input_ids[row, target])])
+        while target > 0 and ("INST" in token or "]" in token):
+            target -= 1
+            token = tokenizer.decode([int(input_ids[row, target])])
+        targets.append(target)
+    return torch.tensor(targets, dtype=torch.long, device=input_ids.device)
 
-                    seq_len = input_ids.shape[1]
 
-                    if tokenizer.padding_side == 'right':
-                        last_idx_tensor = attention_mask.sum(dim=1) - 1
-                    else:
-                        last_idx_tensor = input_ids.new_full((input_ids.shape[0],), seq_len - 1)
+def mistral_extract(phase):
+    def extract(model, tokenizer, prompts, batch_size, device):
+        chunks = []
+        max_length = min(int(getattr(model.config, "max_position_embeddings", 4096)), 4096)
+        rendered = render_prompts(tokenizer, prompts)
+        for start in range(0, len(rendered), batch_size):
+            encoded = tokenizer(
+                rendered[start:start + batch_size], padding=True, truncation=True,
+                max_length=max_length, add_special_tokens=False, return_tensors="pt",
+            )
+            input_ids = encoded.input_ids.to(device)
+            attention_mask = encoded.attention_mask.to(device)
+            targets = endpoint_indices(tokenizer, input_ids, attention_mask)
+            with torch.inference_mode():
+                outputs = model(
+                    input_ids=input_ids, attention_mask=attention_mask,
+                    output_hidden_states=True, return_dict=True,
+                )
+            row_ids = torch.arange(input_ids.shape[0], device=device)
+            layers = outputs.hidden_states[:-1] if phase == "test" else outputs.hidden_states[1:]
+            states = torch.stack([layer[row_ids, targets, :] for layer in layers], dim=1)
+            chunks.append(states.detach().to(device="cpu", dtype=torch.float16))
+        return torch.cat(chunks, dim=0)
+    return extract
 
-                    scalar_idx = last_idx_tensor[0].item()
 
-                    curr_token_str = tokenizer.decode([input_ids[0, scalar_idx].item()])
-                    while scalar_idx > 0 and ("INST" in curr_token_str or "]" in curr_token_str):
-                        scalar_idx -= 1
-                        curr_token_str = tokenizer.decode([input_ids[0, scalar_idx].item()])
-
-                    activations = [layer_hidden_state[0, scalar_idx, :].cpu().clone() for layer_hidden_state in
-                                   hidden_states]
-
-                    del input_ids, outputs, hidden_states
-                    torch.cuda.empty_cache()
-
-                batch_acts.append(activations)
-            return batch_acts
-
-        benign_acts = process_batch(benign_prompts, "Extracting benign sample features")
-        all_activations.extend(benign_acts)
-
-        malicious_acts = process_batch(malicious_prompts, "Extracting malicious sample features")
-        all_activations.extend(malicious_acts)
-
-        benign_labels = torch.zeros(len(benign_prompts), device=device)
-        malicious_labels = torch.ones(len(malicious_prompts), device=device)
-        all_labels = torch.cat([benign_labels, malicious_labels], dim=0)
-
-        num_layers = len(all_activations[0])
-
-        layered_activations = []
-        for l in range(num_layers):
-            layer_feats = torch.stack([sample_feats[l] for sample_feats in all_activations], dim=0)
-            layered_activations.append(layer_feats)
-
-        background_layered_activations = torch.stack(layered_activations, dim=1).to(device)
-
-        save_dir = os.path.dirname(load_path)
-        os.makedirs(save_dir, exist_ok=True)
-        torch.save({
-            "background_layered_activations": background_layered_activations,
-            "labels": all_labels
-        }, load_path)
-
-    return background_layered_activations, all_labels
+def extract_trainset_hiddenstates(
+    seed, device, dtype, batch_size, benign_train_set_list, malicious_train_set_list,
+    rebuild_cache=False, force_rebuild_cache=False, k=10,
+):
+    protocol = FeatureProtocol(
+        "mistral", "mistral_7b", ATTACK_FILES,
+        benign_train_set_list, malicious_train_set_list,
+        TRAINING_ENDPOINT, TEST_ENDPOINT,
+    )
+    set_determinism(42)
+    rank_path = protocol.rank_cache_path(seed, k)
+    saved = None
+    if not force_rebuild_cache and not rebuild_cache:
+        saved = protocol.load_rank_cache(seed, dtype, k)
+        if saved is not None:
+            return saved
+    if saved is None:
+        with open(os.devnull, "w", encoding="utf-8") as sink:
+            with redirect_stdout(sink), redirect_stderr(sink):
+                model, tokenizer = protocol.model_and_tokenizer(device, dtype)
+                protocol.prepare_test_features(device, dtype, batch_size, force_rebuild_cache, model, tokenizer, mistral_extract("test"))
+                training_path = protocol.prepare_training_features(seed, device, dtype, batch_size, force_rebuild_cache, model, tokenizer, mistral_extract("training"))
+                protocol.prepare_ranks(seed, device, k)
+                training_path.unlink(missing_ok=True)
+        del model, tokenizer
+    saved = torch.load(rank_path, map_location="cpu", weights_only=False)
+    protocol.validate_rank(saved, seed, dtype, k)
+    return saved
