@@ -9,6 +9,5 @@ exec python "$script_dir/mtk_vicuna.py" \
     --ist-k 10 \
     --ist-n-estimators 500 \
     --ist-max-samples 512 \
-    --ist-weight 0.25 \
     --device cuda:0 \
     "$@"

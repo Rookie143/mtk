@@ -140,6 +140,8 @@ class FeatureProtocol:
         self, model_name: str, model_dir: str, attack_files,
         benign_train_set_list, malicious_train_set_list,
         training_endpoint: str, test_endpoint: str,
+        training_line_reader=None,
+        rank_k_values=None,
     ):
         self.model_name = model_name
         self.cache_root = HERE / "canonical_assets" / model_name
@@ -153,6 +155,8 @@ class FeatureProtocol:
         }
         self.training_endpoint = training_endpoint
         self.test_endpoint = test_endpoint
+        self.training_line_reader = training_line_reader or read_lines
+        self.rank_k_values = tuple(rank_k_values) if rank_k_values is not None else None
         missing = [str(path) for path in [self.benign_test] + self.attack_files if not path.is_file()]
         if missing:
             raise FileNotFoundError(f"Required test data missing: {missing}")
@@ -180,7 +184,7 @@ class FeatureProtocol:
         sources = []
         for role in ("benign", "malicious"):
             for path, count in self.training_profile[role]:
-                rows = read_lines(path)
+                rows = self.training_line_reader(path)
                 rng = random.Random(stable_seed(seed, f"train:{role}:{path.name}"))
                 indices = rng.sample(range(len(rows)), count)
                 selected[role].extend(rows[index] for index in indices)
@@ -191,12 +195,15 @@ class FeatureProtocol:
         return selected["benign"], selected["malicious"], sources
 
     def training_manifest(self, seed: int, sources, dtype: str):
-        return {
+        manifest = {
             "seed": seed, "feature_endpoint": self.training_endpoint,
             "dtype": dtype, "training_sources": sources,
             "model_config_sha256": sha256_file(self.model_path / "config.json"),
             "tokenizer_config_sha256": sha256_file(self.model_path / "tokenizer_config.json"),
         }
+        if self.training_line_reader is not read_lines:
+            manifest["training_text_protocol"] = self.training_line_reader.__name__
+        return manifest
 
     def test_manifest(self, dtype: str):
         paths = [self.benign_test] + self.attack_files
@@ -291,19 +298,20 @@ class FeatureProtocol:
         train = torch.load(train_path, map_location="cpu", weights_only=False)
         test = torch.load(test_path, map_location="cpu", weights_only=False)
         selected_features, rows = self.selected_test(seed, test)
+        k_values = tuple(sorted(set((self.rank_k_values or (k,)) + (k,))))
         manifest = {
             "seed": seed,
-            "k_values": [k],
+            "k_values": list(k_values),
             "training_manifest": train["manifest"],
             "test_manifest": test["manifest"],
             "sample_rows": rows,
         }
         train_ranks = rank_features(
-            train["features"], train["features"], train["labels"], (k,),
+            train["features"], train["features"], train["labels"], k_values,
             device, exclude_self=True,
         )
         test_ranks = rank_features(
-            selected_features, train["features"], train["labels"], (k,),
+            selected_features, train["features"], train["labels"], k_values,
             device, exclude_self=False,
         )
         output.parent.mkdir(parents=True, exist_ok=True)
@@ -342,7 +350,10 @@ class FeatureProtocol:
         labels = saved["labels"]
         if labels.shape != (1600,) or int((labels == 0).sum()) != 800 or int((labels == 1).sum()) != 800:
             raise ValueError("Rank cache training labels mismatch")
-        if k not in manifest["k_values"] or k not in saved["train_ranks"] or k not in saved["test_ranks"]:
+        expected_k_values = sorted(set((self.rank_k_values or (k,)) + (k,)))
+        if manifest["k_values"] != expected_k_values:
+            raise ValueError("Rank cache k-value protocol mismatch")
+        if k not in saved["train_ranks"] or k not in saved["test_ranks"]:
             raise ValueError("Rank cache does not contain the selected k")
         train = saved["train_ranks"][k]
         test = saved["test_ranks"][k]

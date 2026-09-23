@@ -9,6 +9,15 @@ from feature_protocol import FeatureProtocol, render_prompts, set_determinism
 ATTACK_FILES = ["JailJudge_all_1.json", "ijp_0.json", "nonagcg_1.json", "autodan_1.json", "drattack_1.json", "pair_1.json", "pap_gpt3.5_1.json", "pap_gpt4_1.json", "pap_llama2_1.json", "saa_1.json", "tap_1.json", "zulu_1.json"]
 TRAINING_ENDPOINT = "mistral_slash_token_transformer_layers_1_32"
 TEST_ENDPOINT = "mistral_slash_token_embedding_plus_layers_1_31_project_compatible"
+CANONICAL_RANK_K_VALUES = (1, 3, 5, 10, 15, 20, 25, 30)
+
+
+def read_mistral_training_lines(path):
+    with open(path, "r", encoding="utf-8", errors="ignore", newline="") as stream:
+        rows = [line for line in stream.readlines() if line.strip()]
+    if path.name != "alpaca.txt":
+        rows = [line.replace("\r\n", "\n") for line in rows]
+    return rows
 
 
 def endpoint_indices(tokenizer, input_ids, attention_mask):
@@ -58,6 +67,8 @@ def extract_trainset_hiddenstates(
         "mistral", "mistral_7b", ATTACK_FILES,
         benign_train_set_list, malicious_train_set_list,
         TRAINING_ENDPOINT, TEST_ENDPOINT,
+        training_line_reader=read_mistral_training_lines,
+        rank_k_values=CANONICAL_RANK_K_VALUES,
     )
     set_determinism(42)
     rank_path = protocol.rank_cache_path(seed, k)

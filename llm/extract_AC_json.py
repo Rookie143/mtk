@@ -5,8 +5,8 @@ import subprocess
 
 
 def extract_accuracy_to_excel(your_flag='.'):
-    folder_path = f"./{your_flag}/report"
-    output_file = f"./{your_flag}/report/accuracy_results.xlsx"
+    folder_path = os.path.join(os.fspath(your_flag), "report")
+    output_file = os.path.join(folder_path, "accuracy_results.xlsx")
     results = []
     result = subprocess.run(
         ['ls', '-1', folder_path],

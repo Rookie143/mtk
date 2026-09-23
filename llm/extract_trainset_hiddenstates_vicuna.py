@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import os
+from pathlib import Path
 
 import torch
 
@@ -101,6 +101,41 @@ def extract_dual_endpoint_activations(
     }
 
 
+def extract_input_ids_activations(
+    model, tokenizer, input_id_sequences, batch_size: int, device: str
+):
+    chunks = []
+    for start in range(0, len(input_id_sequences), batch_size):
+        sequences = input_id_sequences[start:start + batch_size]
+        batch = tokenizer.pad(
+            {"input_ids": [sequence.tolist() for sequence in sequences]},
+            padding=True,
+            return_tensors="pt",
+        )
+        input_ids = batch.input_ids.to(device)
+        attention_mask = batch.attention_mask.to(device)
+        with torch.inference_mode():
+            outputs = model(
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                output_hidden_states=True,
+                return_dict=True,
+            )
+        layers = outputs.hidden_states[1:model.config.num_hidden_layers + 1]
+        states = torch.stack([layer[:, -1, :] for layer in layers], dim=1)
+        chunks.append(states.detach().to(device="cpu", dtype=torch.float16))
+        print(
+            f"AutoDAN target features "
+            f"{min(start + batch_size, len(input_id_sequences))}/"
+            f"{len(input_id_sequences)}",
+            flush=True,
+        )
+        del outputs, layers, states, input_ids, attention_mask, batch
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+    return torch.cat(chunks, dim=0)
+
+
 def extract_trainset_hiddenstates(
     your_flag,
     device,
@@ -111,8 +146,8 @@ def extract_trainset_hiddenstates(
     colon_batch_size: int,
     ist_batch_size: int,
 ):
-    path = f"./{your_flag}/saved_features_and_labels.pt"
-    if os.path.exists(path):
+    path = Path(your_flag) / "saved_features_and_labels.pt"
+    if path.exists():
         saved = torch.load(path, map_location="cpu", weights_only=False)
         return saved["background_layered_activations"], saved["labels"]
     features = extract_dual_endpoint_activations(
@@ -124,7 +159,7 @@ def extract_trainset_hiddenstates(
         device,
     )
     labels = torch.tensor([0] * len(benign_prompts) + [1] * len(malicious_prompts))
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+    path.parent.mkdir(parents=True, exist_ok=True)
     torch.save({
         "background_layered_activations": features,
         "labels": labels,

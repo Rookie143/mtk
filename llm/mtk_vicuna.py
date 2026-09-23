@@ -20,12 +20,15 @@ from draw_auroc import evaluate_attack_auroc
 from extract_AC_json import extract_accuracy_to_excel
 from extract_trainset_hiddenstates_vicuna import (
     configure_tokenizer,
+    extract_input_ids_activations,
     extract_trainset_hiddenstates,
 )
+from utils.string_utils import autodan_SuffixManager, load_conversation_template
 
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE
+IST_WEIGHT = 0.25
 
 
 def parse_args(argv=None):
@@ -39,9 +42,10 @@ def parse_args(argv=None):
     parser.add_argument("--ist-k", type=int, default=10)
     parser.add_argument("--ist-n-estimators", type=int, default=500)
     parser.add_argument("--ist-max-samples", type=int, default=512)
-    parser.add_argument("--ist-weight", type=float, default=0.27)
     parser.add_argument("--device", default="cuda:0" if torch.cuda.is_available() else "cpu")
-    parser.add_argument("--output-dir", default="table4_seed_reproducible/mtk_vicuna_runs")
+    parser.add_argument("--colon-batch-size", type=int, default=8)
+    parser.add_argument("--ist-batch-size", type=int, default=16)
+    parser.add_argument("--output-dir", default="results/vicuna")
     args = parser.parse_args(argv)
     positive = (
         args.colon_k,
@@ -50,11 +54,11 @@ def parse_args(argv=None):
         args.ist_k,
         args.ist_n_estimators,
         args.ist_max_samples,
+        args.colon_batch_size,
+        args.ist_batch_size,
     )
     if any(value < 1 for value in positive):
         parser.error("k, n-estimators, and max-samples must be positive")
-    if not 0.0 <= args.ist_weight <= 1.0:
-        parser.error("--ist-weight must be in [0, 1]")
     return args
 
 
@@ -104,6 +108,30 @@ def deterministic_sample(rows, count, seed, namespace):
     return [rows[index] for index in rng.sample(range(len(rows)), count)]
 
 
+def autodan_input_ids(tokenizer, file_path, records):
+    with open(file_path, "r", encoding="utf-8", errors="ignore") as stream:
+        raw_items = json.load(stream)
+    if not isinstance(raw_items, list):
+        raise ValueError(f"AutoDAN dataset must be a JSON list: {file_path}")
+
+    conversation = load_conversation_template("vicuna")
+    sequences = []
+    for record in records:
+        item = raw_items[record["source_index"]]
+        goal = (item.get("goal") or item.get("instruction") or "").strip()
+        jailbreak = (item.get("jailbreak") or "").strip()
+        suffix = jailbreak[len(goal):].strip() if len(jailbreak) >= len(goal) else jailbreak
+        manager = autodan_SuffixManager(
+            tokenizer=tokenizer,
+            conv_template=conversation,
+            instruction=goal,
+            target=item.get("target"),
+            adv_string=suffix,
+        )
+        sequences.append(manager.get_input_ids(adv_string=suffix))
+    return sequences
+
+
 def get_train_dataset(benign_path_list, malicious_path_list, seed):
     selected = []
     for role, path_list in (("benign", benign_path_list), ("malicious", malicious_path_list)):
@@ -133,8 +161,21 @@ def eval(attack_file_path_list, detector, your_flag, seed):
         records = deterministic_sample(
             records, 500, seed, f"test:{method_name(file_path)}"
         )
-        prompts = [record["prompt"] for record in records]
-        attack_scores, predicted_labels, _ = detector.predict_batch(prompts)
+        if Path(file_path).name == "autodan_1.json":
+            sequences = autodan_input_ids(detector.tokenizer, file_path, records)
+            states = extract_input_ids_activations(
+                detector.model,
+                detector.tokenizer,
+                sequences,
+                detector.colon_batch_size,
+                detector.device,
+            )
+            attack_scores, predicted_labels, _ = detector.predict_activations(
+                {"colon": states, "ist": states}
+            )
+        else:
+            prompts = [record["prompt"] for record in records]
+            attack_scores, predicted_labels, _ = detector.predict_batch(prompts)
         results_detail = []
         for position, (record, attack_score, predicted_label) in enumerate(
             zip(records, attack_scores, predicted_labels), start=1
@@ -157,15 +198,15 @@ def main(argv=None):
     args = parse_args(argv)
     os.chdir(REPO)
     set_determinism(args.seed)
-    your_flag = (
-        f"{args.output_dir}/"
+    output_root = Path(args.output_dir).expanduser()
+    your_flag = output_root / (
         f"seed-{args.seed}_"
         f"colon-k-{args.colon_k}-trees-{args.colon_n_estimators}-samples-{args.colon_max_samples}_"
         f"ist-k-{args.ist_k}-trees-{args.ist_n_estimators}-samples-{args.ist_max_samples}_"
-        f"ist-weight-{args.ist_weight:.4f}"
+        f"ist-weight-{IST_WEIGHT:.4f}"
     )
-    colon_batch_size = 8
-    ist_batch_size = 16
+    colon_batch_size = args.colon_batch_size
+    ist_batch_size = args.ist_batch_size
     rank_batch_size = 64
     colon_settings = {
         "k": args.colon_k,
@@ -229,7 +270,7 @@ def main(argv=None):
         your_flag=your_flag,
         colon_settings=colon_settings,
         ist_settings=ist_settings,
-        ist_weight=args.ist_weight,
+        ist_weight=IST_WEIGHT,
         random_state=args.seed,
         device=args.device,
         colon_batch_size=colon_batch_size,
@@ -237,7 +278,7 @@ def main(argv=None):
         rank_batch_size=rank_batch_size,
     )
     eval(attack_file_path_list, detector, your_flag, args.seed)
-    evaluate_attack_auroc(f"{your_flag}/report/", "vicuna_test")
+    evaluate_attack_auroc(your_flag / "report", "vicuna_test")
 
 
 if __name__ == "__main__":

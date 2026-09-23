@@ -47,6 +47,11 @@ def generate_report(attack_key, results_detail, your_flag, total):
 
     metrics = calculate_metrics(y_true, y_pred)
 
-    save_experiment_report(metrics, results_detail, attack_key, f"./{your_flag}/report")
+    save_experiment_report(
+        metrics,
+        results_detail,
+        attack_key,
+        os.path.join(os.fspath(your_flag), "report"),
+    )
 
     malicious_count = sum(1 for item in results_detail if item["Predicted_Label"] == 1)

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import os
+from pathlib import Path
 
 import torch
 
@@ -86,8 +86,8 @@ class JailbreakDetector:
             self.normalizers[endpoint] = (mean, std)
 
     def _training_sequences(self, endpoint: str, k: int):
-        path = f"./{self.your_flag}/training_sequences_{endpoint}.pt"
-        if os.path.exists(path):
+        path = Path(self.your_flag) / f"training_sequences_{endpoint}.pt"
+        if path.exists():
             return torch.load(path, map_location="cpu", weights_only=False)
         sequences = rank_features(
             self.background[endpoint],
@@ -98,7 +98,7 @@ class JailbreakDetector:
             exclude_self=True,
             batch_size=self.rank_batch_size,
         )
-        os.makedirs(os.path.dirname(path), exist_ok=True)
+        path.parent.mkdir(parents=True, exist_ok=True)
         torch.save(sequences, path)
         return sequences
 
@@ -129,6 +129,9 @@ class JailbreakDetector:
             self.ist_batch_size,
             self.device,
         )
+        return self.predict_activations(activations)
+
+    def predict_activations(self, activations):
         fused, endpoint_scores = self.score_activations(activations)
         labels = (fused > 0).astype("int64")
         return fused, labels, endpoint_scores
