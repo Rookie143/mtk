@@ -32,7 +32,7 @@
 
 ### Basic Environment
 
-- Python 3.8+ (3.9/3.10 recommended for PyTorch compatibility)
+- Python 3.10+
   
 - CUDA 11.7+ (recommended for GPU acceleration; CPU is supported but slower)
   
@@ -52,11 +52,11 @@ pip install -r requirements.txt
 # Install LLM core dependencies
 cd ../llm
 pip install -r requirements.txt
-```
 
-To install the adaptive attack package from the repository root:
+# Return to the repository root
+cd ..
 
-```bash
+# Install the adaptive attack package
 pip install -e ./adaptive_attack
 ```
 
@@ -66,30 +66,32 @@ pip install -e ./adaptive_attack
 
 Place datasets under `vlm/datasets/` (see [`load_datasets.py`](vlm/load_datasets.py)).
 
-#### Training Datasets
+#### Training / Reference-Bank Datasets
 
 | Dataset | Repository Path | Role |
 | --- | --- | --- |
-| [VQA](https://visualqa.org/download.html) | `vlm/datasets/vqa/test2015` | Benign |
-| [SD-AdvBench](vlm/datasets/sd_advbench/outputs_new) | `vlm/datasets/sd_advbench` | Malicious |
+| [VQA](https://visualqa.org/download.html) | `vlm/datasets/vqa/test2015` | Benign (250 samples) |
+| [USB-Overrefusal](https://huggingface.co/datasets/cgjacklin/USB/tree/main) | `vlm/datasets/usb` | Benign PMP (50 samples) |
+| [SD-AdvBench](vlm/datasets/sd_advbench/outputs_new) | `vlm/datasets/sd_advbench` | Malicious (300 samples) |
 
 #### Testing Datasets
 
 | Dataset | Repository Path | Role |
 | --- | --- | --- |
 | [MM-Vet v2](https://github.com/yuweihao/MM-Vet) | `vlm/datasets/mm-vet-v2` | Benign |
-| [USB-Overrefusal](https://huggingface.co/datasets/cgjacklin/USB/tree/main) | `vlm/datasets/usb` | Benign |
+| [USB-Overrefusal](https://huggingface.co/datasets/cgjacklin/USB/tree/main) | `vlm/datasets/usb` | Benign PMP |
 | [MM-SafetyBench](https://huggingface.co/datasets/PKU-Alignment/MM-SafetyBench) | `vlm/datasets/MM-SafetyBench` | Malicious |
 | [FigStep](https://github.com/CryptoAILab/FigStep/tree/main/data/images/SafeBench) | `vlm/datasets/FigStep` | Malicious |
 | [JailBreakV_28K](https://huggingface.co/datasets/JailbreakV-28K/JailBreakV-28k) | `vlm/datasets/JailBreakV_28K` | Malicious |
 
 ### 2. Model Weights Preparation
 
-Download multimodal model weights and place them in the specified paths (modify `from_pretrained` paths in test scripts):
+By default, the VLM scripts load model weights directly from Hugging Face:
 
-- LLaVA-1.6-Vicuna-7B: `./models/llava-v1.6-vicuna-7b-hf`
-  
-- Qwen-VL-Chat: `./model/qwen_vl_chat`
+- LLaVA-1.6-Vicuna-7B: `llava-hf/llava-v1.6-vicuna-7b-hf`
+- Qwen-VL-Chat: `Qwen/Qwen-VL-Chat`
+
+For offline use, pass a local model directory with `--model-name-or-path`.
   
 
 ### 3. Run Detection
