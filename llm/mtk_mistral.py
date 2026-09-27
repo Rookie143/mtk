@@ -83,11 +83,10 @@ def eval(attack_file_path_list, detector, seed, report_dir):
             writer.writerow(("Sample_Index", "Source_Index", "True_Label", "Predicted_Label", "Anomaly_Score"))
             for index, (row, score) in enumerate(selected, 1):
                 writer.writerow((index, row["source_index"], int(role == "attack"), int(score < 0), score))
-    evaluate_attack_auroc(str(report_dir), f"{MODEL}_test")
-    with (report_dir / "all_attack_auroc_results.csv").open(
-        newline="", encoding="utf-8-sig"
-    ) as stream:
-        per_attack = {row["Attack Method"]: float(row["AUROC"]) for row in csv.DictReader(stream)}
+    per_attack = evaluate_attack_auroc(
+        str(report_dir),
+        f"{MODEL}_test",
+    )
     return sum(per_attack.values()) / len(per_attack), per_attack
 
 
@@ -125,7 +124,7 @@ def main(argv=None):
         k_nb=args.k,
     )
     mean, per_attack = eval(attack_file_path_list, detector, args.seed, report_dir)
-    print(f"{MODEL} seed {args.seed}: mean AUROC {mean:.16f}, SAA AUROC {per_attack['saa']:.6f}")
+    print(f"{MODEL} seed {args.seed}: mean AUROC {mean:.16f}, SAA AUROC {per_attack['SAA']:.6f}")
     print(f"AUROC report: {report_dir / 'all_attack_auroc_results.csv'}")
     return 0
 

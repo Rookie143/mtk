@@ -278,7 +278,19 @@ def main(argv=None):
         rank_batch_size=rank_batch_size,
     )
     eval(attack_file_path_list, detector, your_flag, args.seed)
-    evaluate_attack_auroc(your_flag / "report", "vicuna_test")
+    per_attack = evaluate_attack_auroc(
+        your_flag / "report",
+        "vicuna_test",
+    )
+    mean_auroc = sum(per_attack.values()) / len(per_attack)
+    print(
+        f"vicuna seed {args.seed}: mean AUROC {mean_auroc:.6f}, "
+        f"SAA AUROC {per_attack['SAA']:.6f}"
+    )
+    print(
+        "AUROC report:",
+        Path(your_flag) / "report" / "all_attack_auroc_results.csv",
+    )
 
 
 if __name__ == "__main__":
