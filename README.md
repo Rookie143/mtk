@@ -26,6 +26,7 @@
 | [`llm`](llm) | MTK detection and evaluation scripts for LLMs. |
 | [`vlm`](vlm) | MTK detection and evaluation scripts for VLMs. |
 | [`adaptive_attack`](adaptive_attack) | Standalone adaptive attack against MTK with `L1`/`L2`/`L3` evasion losses. |
+| [`llm/datasets/train_data`](llm/datasets/train_data) | Pseudo-malicious prompt (PMP) data used in the LLM experiments. |
 
 
 ## 📋 Environment Requirements
@@ -66,31 +67,23 @@ pip install -e ./adaptive_attack
 
 Place datasets under `vlm/datasets/` (see [`load_datasets.py`](vlm/load_datasets.py)).
 
-#### Training / Reference-Bank Datasets
-
-Following the paper setting, the VLM reference bank contains **300 benign** and **300 malicious** image-text samples.
-
-| Dataset | Repository Path | Role | Samples |
-| --- | --- | --- | ---: |
-| [VQA](https://visualqa.org/download.html) | `vlm/datasets/vqa/test2015` | Benign | 250 |
-| [USB-Overrefusal](https://huggingface.co/datasets/cgjacklin/USB/tree/main) | `vlm/datasets/usb` | Benign multimodal PMP | 50 |
-| [SD-AdvBench](vlm/datasets/sd_advbench/outputs_new) | `vlm/datasets/sd_advbench` | Malicious image-text pairs | 300 |
-
-The malicious reference images are generated from the corresponding **AdvBench** prompts using **Stable Diffusion v1.5**, following the paper protocol.
-
-#### Testing Datasets
-
-The benign evaluation set is **MM-Vet v2**. Jailbreak evaluation uses **MM-SafetyBench**, **JailBreakV-28K**, and **FigStep/FigImg**. USB is additionally used as the benign multimodal PMP set for the robustness-to-PMP evaluation.
+#### Training Datasets
 
 | Dataset | Repository Path | Role |
 | --- | --- | --- |
-| [MM-Vet v2](https://github.com/yuweihao/MM-Vet) | `vlm/datasets/mm-vet-v2` | Benign evaluation |
-| [MM-SafetyBench](https://huggingface.co/datasets/PKU-Alignment/MM-SafetyBench) | `vlm/datasets/MM-SafetyBench` | Jailbreak evaluation |
-| [FigStep](https://github.com/CryptoAILab/FigStep/tree/main/data/images/SafeBench) | `vlm/datasets/FigStep` | Jailbreak evaluation |
-| [JailBreakV_28K](https://huggingface.co/datasets/JailbreakV-28K/JailBreakV-28k) | `vlm/datasets/JailBreakV_28K` | Jailbreak evaluation |
-| [USB-Overrefusal](https://huggingface.co/datasets/cgjacklin/USB/tree/main) | `vlm/datasets/usb` | Benign multimodal PMP evaluation |
+| [VQA](https://visualqa.org/download.html) | `vlm/datasets/vqa/test2015` | Benign |
+| [USB-Overrefusal](https://huggingface.co/datasets/cgjacklin/USB/tree/main) | `vlm/datasets/usb` | Benign / Pseudo-Malicious |
+| [SD-AdvBench](vlm/datasets/sd_advbench/outputs_new) | `vlm/datasets/sd_advbench` | Malicious |
 
-The VLM experiments keep the same MTK detector settings as the LLM experiments: `k=10`, `max_samples=512`, and `n_estimators=500`.
+#### Testing Datasets
+
+| Dataset | Repository Path | Role |
+| --- | --- | --- |
+| [MM-Vet v2](https://github.com/yuweihao/MM-Vet) | `vlm/datasets/mm-vet-v2` | Benign |
+| [USB-Overrefusal](https://huggingface.co/datasets/cgjacklin/USB/tree/main) | `vlm/datasets/usb` | Pseudo-Malicious |
+| [MM-SafetyBench](https://huggingface.co/datasets/PKU-Alignment/MM-SafetyBench) | `vlm/datasets/MM-SafetyBench` | Malicious |
+| [FigStep](https://github.com/CryptoAILab/FigStep/tree/main/data/images/SafeBench) | `vlm/datasets/FigStep` | Malicious |
+| [JailBreakV_28K](https://huggingface.co/datasets/JailbreakV-28K/JailBreakV-28k) | `vlm/datasets/JailBreakV_28K` | Malicious |
 
 ### 2. Model Weights Preparation
 
@@ -118,22 +111,18 @@ python test_AUROC_qwen.py
 
 ### 1. Dataset Preparation
 
-#### Training / Reference-Bank Datasets
+#### Training Datasets
 
-Following the paper setting, MTK uses a **1,600-sample reference bank** with **800 benign** and **800 malicious** anchors. No jailbreak samples are used to construct the reference bank.
+| Dataset | Repository Path | Role |
+| --- | --- | --- |
+| [Alpaca](https://huggingface.co/datasets/gbharti/finance-alpaca) | `llm/datasets/train_data` | Benign |
+| [Databricks-Dolly-15k](https://huggingface.co/datasets/databricks/databricks-dolly-15k) | `llm/datasets/train_data` | Benign |
+| [OR-Bench](https://huggingface.co/datasets/bench-llm/or-bench) | `llm/datasets/train_data` | Pseudo-Malicious |
+| [MaliciousInstruct](https://huggingface.co/datasets/walledai/MaliciousInstruct) | `llm/datasets/train_data` | Malicious |
+| [AdvBench](https://github.com/llm-attacks/llm-attacks/tree/main/data/advbench) | `llm/datasets/train_data` | Malicious |
+| [PKU-SafeRLHF](https://huggingface.co/datasets/PKU-Alignment/PKU-SafeRLHF) | `llm/datasets/train_data` | Malicious |
 
-| Dataset | Repository Path | Role | Paper Setting |
-| --- | --- | --- | ---: |
-| [Databricks-Dolly-15k](https://huggingface.co/datasets/databricks/databricks-dolly-15k) | `llm/datasets/train_data` | Benign | 300 |
-| [Alpaca](https://huggingface.co/datasets/gbharti/finance-alpaca) | `llm/datasets/train_data` | Benign | 300 |
-| [OR-Bench](https://huggingface.co/datasets/bench-llm/or-bench) | `llm/datasets/train_data` | Benign PMP | 200 |
-| [MaliciousInstruct](https://huggingface.co/datasets/walledai/MaliciousInstruct) | `llm/datasets/train_data` | Malicious | part of 800 |
-| [PKU-SafeRLHF](https://huggingface.co/datasets/PKU-Alignment/PKU-SafeRLHF) | `llm/datasets/train_data` | Malicious | part of 800 |
-| [AdvBench](https://github.com/llm-attacks/llm-attacks/tree/main/data/advbench) | `llm/datasets/train_data` | Malicious | part of 800 |
-
-The paper draws the 800 malicious anchors evenly from **MaliciousInstruct, PKU-SafeRLHF, and AdvBench**. The default detector settings are `k=10`, `max_samples=512`, and `n_estimators=500`.
-
-> All LLM reference-bank datasets are stored in unified `.txt` format.
+> All LLM training datasets are stored in unified `.txt` format.
 
 #### Testing Datasets
 
@@ -145,8 +134,6 @@ The paper draws the 800 malicious anchors evenly from **MaliciousInstruct, PKU-S
 Supported `{model_name}` values: `llama2`, `llama3`, `mistral`, and `vicuna`.
 
 The filename suffix is used as the evaluation label: `_1` for malicious/jailbreak samples and `_0` for benign samples.
-
-The paper evaluates ten jailbreak attack families: **AutoDAN, DrAttack, IJP, JailJudge, GCG, PAIR, PAP, SAA, TAP, and Zulu**. For reporting, the three released PAP source-model variants are aggregated into a single PAP result.
 
 ### 2. Model Weights Preparation
 
