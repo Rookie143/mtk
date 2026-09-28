@@ -43,6 +43,28 @@ datasets/
 
 Generated image caches, feature banks, and result files are ignored by git.
 
+You can prepare the public datasets with:
+
+```bash
+cd vlm
+pip install huggingface_hub
+bash download_datasets.sh all-public
+```
+
+Some datasets are hosted on Hugging Face. `USB` is gated and requires accepting
+the dataset terms and running `huggingface-cli login` before download. To
+download only selected datasets, pass target names, for example:
+
+```bash
+bash download_datasets.sh vqa mm-vet mm-safetybench figstep
+```
+
+To try downloading every dataset, including gated `USB`, run:
+
+```bash
+bash download_datasets.sh all
+```
+
 ## Run LLaVA
 
 Use either a Hugging Face model id or a local model path:
