@@ -59,6 +59,15 @@ committed to Git.
 
 ## Reference Bank Format
 
+`reference_bank.pt` is the MTK feature bank used by the adaptive attack. It is
+not a raw text dataset. It stores hidden-state features extracted from labeled
+benign and malicious reference prompts using the same target model.
+
+The bank is used in two places:
+
+- As anchor features for the adaptive `L1`/`L2`/`L3` surrogate losses.
+- As the background feature bank for MTK detector scoring.
+
 `reference_bank.pt` is a PyTorch dictionary:
 
 ```python
@@ -81,6 +90,10 @@ Default label convention:
 1 = benign
 0 = malicious
 ```
+
+In other words, each row in `features` is one reference prompt represented as
+model hidden states across layers, and the matching value in `labels` tells
+whether that reference prompt is benign or malicious.
 
 The reference bank must be extracted with the same model, tokenizer, chat
 template, layer count, and hidden-state position used for the attack.
@@ -145,12 +158,18 @@ python -m adaptive_attack.examples.run_mtk \
 
 Use the batch script to run multiple samples, losses, and lambda values:
 
+### Quick sanity check
+
+This configuration is intended for a fast validation run. It uses the first 30
+samples from the provided Llama2 NanoGCG/AdvBench-style sample file, the `L3`
+loss, and five evenly spaced lambda values:
+
 ```bash
 python -m adaptive_attack.examples.run_llama2_batch \
   --model /path/to/Llama-2-7b-chat-hf \
   --feature-library /path/to/reference_bank.pt \
-  --sample-file /path/to/samples.json \
-  --output-dir ./adaptive_attack_results \
+  --sample-file llm/llm_mtk/datasets/llama2_test/nanogcg_1.json \
+  --output-dir ./adaptive_attack_quick_l3 \
   --max-samples 30 \
   --loss-types l3 \
   --lambdas 0.1,0.3,0.5,0.7,0.9 \
@@ -159,6 +178,31 @@ python -m adaptive_attack.examples.run_llama2_batch \
   --topk 128 \
   --batch-size 128
 ```
+
+### Larger sweep
+
+For a more complete evaluation, use a larger AdvBench-style sample file and
+sweep all three surrogate losses. Adjust `--max-samples` to the number of
+samples you want to evaluate, or omit it to run the full file. The repository
+sample file above is only a small 42-sample sanity-check file.
+
+```bash
+python -m adaptive_attack.examples.run_llama2_batch \
+  --model /path/to/Llama-2-7b-chat-hf \
+  --feature-library /path/to/reference_bank.pt \
+  --sample-file /path/to/large_advbench_samples.json \
+  --output-dir ./adaptive_attack_full_sweep \
+  --loss-types l1,l2,l3 \
+  --lambdas 0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9 \
+  --num-steps 1000 \
+  --search-width 512 \
+  --topk 256 \
+  --batch-size 128
+```
+
+The quick sanity check is useful for verifying that the pipeline works and that
+metric trends are reasonable. The larger sweep is the recommended setting for
+reporting more rigorous aggregate results.
 
 The script resumes by default. Completed `(loss_type, lambda, sample_index)` rows
 in `raw_results.jsonl` are skipped. Use `--no-resume` to force a fresh run.
