@@ -59,16 +59,23 @@ def parse_csv_strings(value: str) -> list[str]:
 
 
 def load_samples(path: str, start: int, limit: int | None) -> list[dict[str, Any]]:
-    """Load a slice of JSON-list samples."""
-    with open(path, "r", encoding="utf-8") as file:
-        data = json.load(file)
-    if not isinstance(data, list):
-        raise ValueError("sample file must contain a JSON list")
+    """Load a slice of samples from JSON or the standard AdvBench CSV."""
+    suffix = Path(path).suffix.lower()
+    if suffix == ".csv":
+        with open(path, "r", encoding="utf-8", newline="") as file:
+            data = list(csv.DictReader(file))
+    else:
+        with open(path, "r", encoding="utf-8") as file:
+            data = json.load(file)
+        if not isinstance(data, list):
+            raise ValueError("sample file must contain a JSON list")
+
     stop = None if limit is None else start + limit
     samples = data[start:stop]
     for offset, sample in enumerate(samples, start=start):
         for key in ("goal", "target"):
-            if key not in sample:
+            value = sample.get(key) if isinstance(sample, dict) else None
+            if not isinstance(value, str) or not value.strip():
                 raise KeyError("sample %d is missing key: %s" % (offset, key))
         sample["_sample_index"] = offset
     return samples
