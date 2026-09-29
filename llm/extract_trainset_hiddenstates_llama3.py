@@ -14,7 +14,7 @@ def extract_trainset_hiddenstates(
     rebuild_cache=False, force_rebuild_cache=False, k=10,
 ):
     protocol = FeatureProtocol(
-        "llama3", "llama3", ATTACK_FILES,
+        "llama3", "Llama3-8b-Instruct", ATTACK_FILES,
         benign_train_set_list, malicious_train_set_list,
         "last_token_native_llama3_chat_template",
         "last_token_native_llama3_chat_template",
