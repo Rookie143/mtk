@@ -119,23 +119,18 @@ Input JSONL format:
 
 ## Attack Sample Format
 
-Batch scripts expect a JSON list. Each item needs at least:
+Batch scripts accept either a JSON list with `goal` and `target` fields, or
+the standard AdvBench `harmful_behaviors.csv` used by GCG.
 
-```json
-[
-  {
-    "goal": "user prompt to optimize against",
-    "target": "target response prefix"
-  }
-]
+The repository's NanoGCG samples reuse the original AdvBench targets. To
+download the full standard AdvBench CSV:
+
+```bash
+python -m adaptive_attack.examples.download_advbench \
+  --output adaptive_attack/data/harmful_behaviors.csv
 ```
 
-Optional fields such as `method` and `model` are preserved in `raw_results.jsonl`.
-A placeholder example is provided at:
-
-```text
-examples/sample_advbench_format.json
-```
+Use `--max-samples N` in the batch runner to choose how many rows to evaluate.
 
 ## Run One Attack
 
@@ -179,30 +174,28 @@ python -m adaptive_attack.examples.run_llama2_batch \
   --batch-size 128
 ```
 
-### Larger sweep
+### Run more AdvBench samples
 
-For a more complete evaluation, use a larger AdvBench-style sample file and
-sweep all three surrogate losses. Adjust `--max-samples` to the number of
-samples you want to evaluate, or omit it to run the full file. The repository
-sample file above is only a small 42-sample sanity-check file.
+To evaluate more standard AdvBench behaviors, first download the original
+`harmful_behaviors.csv` above, then choose the desired number with
+`--max-samples`:
 
 ```bash
 python -m adaptive_attack.examples.run_llama2_batch \
   --model /path/to/Llama-2-7b-chat-hf \
   --feature-library /path/to/reference_bank.pt \
-  --sample-file /path/to/large_advbench_samples.json \
-  --output-dir ./adaptive_attack_full_sweep \
-  --loss-types l1,l2,l3 \
-  --lambdas 0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9 \
-  --num-steps 1000 \
-  --search-width 512 \
-  --topk 256 \
+  --sample-file adaptive_attack/data/harmful_behaviors.csv \
+  --output-dir ./adaptive_attack_advbench \
+  --max-samples 100 \
+  --loss-types l3 \
+  --lambdas 0.1,0.3,0.5,0.7,0.9 \
+  --num-steps 500 \
+  --search-width 128 \
+  --topk 128 \
   --batch-size 128
 ```
 
-The quick sanity check is useful for verifying that the pipeline works and that
-metric trends are reasonable. The larger sweep is the recommended setting for
-reporting more rigorous aggregate results.
+Change `--max-samples` as needed, or omit it to use the full CSV.
 
 The script resumes by default. Completed `(loss_type, lambda, sample_index)` rows
 in `raw_results.jsonl` are skipped. Use `--no-resume` to force a fresh run.
