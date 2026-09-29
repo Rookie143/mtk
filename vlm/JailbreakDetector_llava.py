@@ -18,6 +18,7 @@ class JailbreakDetector:
         k_nb=5,
         max_samples=512,
         output_dir=None,
+        feature_bank_manifest=None,
     ):
         self.model = model
         self.processor = processor
@@ -29,10 +30,30 @@ class JailbreakDetector:
         self.num_layers = self.background_activations_by_layer.shape[1]
         self.output_dir = Path(output_dir) if output_dir else Path("experimental_results") / flag
         self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.feature_bank_manifest = feature_bank_manifest
         self.training_sequences_path = self.output_dir / "training_sequences.pt"
+        self.training_cache_manifest = {
+            "schema_version": 1,
+            "k_nb": int(self.k_nb),
+            "feature_bank_manifest": self.feature_bank_manifest,
+        }
+        training_sequences = None
         if self.training_sequences_path.exists():
-            training_sequences = torch.load(self.training_sequences_path, map_location=self.device)
-        else:
+            cached = torch.load(self.training_sequences_path, map_location=self.device)
+            if (
+                self.feature_bank_manifest is not None
+                and isinstance(cached, dict)
+                and cached.get("manifest") == self.training_cache_manifest
+                and "training_sequences" in cached
+            ):
+                print(f"Reusing compatible training-sequence cache: {self.training_sequences_path}")
+                training_sequences = cached["training_sequences"]
+            else:
+                print(
+                    "Training-sequence cache provenance mismatch; rebuilding: "
+                    f"{self.training_sequences_path}"
+                )
+        if training_sequences is None:
             training_sequences = self._get_training_sequences()
         y_train = self.background_labels
         benign_indices = torch.where(y_train == 0)[0]
@@ -132,7 +153,13 @@ class JailbreakDetector:
 
             all_sequences[i] = ranks
 
-        torch.save(all_sequences, self.training_sequences_path)
+        torch.save(
+            {
+                "training_sequences": all_sequences,
+                "manifest": self.training_cache_manifest,
+            },
+            self.training_sequences_path,
+        )
         return all_sequences
 
     def _calculate_single_rank_k_nb(self, test_vector, background_vectors, target_label, background_labels_arr, k, device):
