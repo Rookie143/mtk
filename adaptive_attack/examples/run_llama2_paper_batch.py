@@ -445,8 +445,8 @@ def main() -> None:
     parser.add_argument(
         "--max-samples",
         type=int,
-        default=500,
-        help="Number of samples to run.",
+        default=None,
+        help="Number of samples to run. Omit to evaluate the full sample file.",
     )
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--dtype", default="float16")
