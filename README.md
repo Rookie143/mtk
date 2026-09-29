@@ -61,51 +61,6 @@ cd ..
 pip install -e ./adaptive_attack
 ```
 
-## 🚀 VLM_Quick Start
-
-### 1. Dataset Preparation
-
-Place datasets under `vlm/datasets/` (see [`load_datasets.py`](vlm/load_datasets.py)).
-
-#### Training Datasets
-
-| Dataset | Repository Path | Role |
-| --- | --- | --- |
-| [VQA](https://visualqa.org/download.html) | `vlm/datasets/vqa/test2015` | Benign |
-| [USB-Overrefusal](https://huggingface.co/datasets/cgjacklin/USB/tree/main) | `vlm/datasets/usb` | Benign / Pseudo-Malicious |
-| [SD-AdvBench](vlm/datasets/sd_advbench/outputs_new) | `vlm/datasets/sd_advbench` | Malicious |
-
-#### Testing Datasets
-
-| Dataset | Repository Path | Role |
-| --- | --- | --- |
-| [MM-Vet v2](https://github.com/yuweihao/MM-Vet) | `vlm/datasets/mm-vet-v2` | Benign |
-| [MM-SafetyBench](https://huggingface.co/datasets/PKU-Alignment/MM-SafetyBench) | `vlm/datasets/MM-SafetyBench` | Malicious |
-| [FigStep](https://github.com/CryptoAILab/FigStep/tree/main/data/images/SafeBench) | `vlm/datasets/FigStep` | Malicious |
-| [JailBreakV_28K](https://huggingface.co/datasets/JailbreakV-28K/JailBreakV-28k) | `vlm/datasets/JailBreakV_28K` | Malicious |
-
-### 2. Model Weights Preparation
-
-By default, the VLM scripts load model weights directly from Hugging Face:
-
-- LLaVA-1.6-Vicuna-7B: `llava-hf/llava-v1.6-vicuna-7b-hf`
-- Qwen-VL-Chat: `Qwen/Qwen-VL-Chat`
-
-For offline use, pass a local model directory with `--model-name-or-path`.
-  
-
-### 3. Run Detection
-
-```bash
-cd vlm
-
-# Run jailbreak detection evaluation for LLaVA
-python test_AUROC_llava.py 
-
-# Run jailbreak detection evaluation for Qwen-VL
-python test_AUROC_qwen.py
-```
-
 ## 🚀 LLM_Quick Start
 
 ### 1. Dataset Preparation
@@ -171,6 +126,51 @@ bash detection_mistral.bash
 bash detection_vicuna.bash
 
 ```
+## 🚀 VLM_Quick Start
+
+### 1. Dataset Preparation
+
+Place datasets under `vlm/datasets/` (see [`load_datasets.py`](vlm/load_datasets.py)).
+
+#### Training Datasets
+
+| Dataset | Repository Path | Role |
+| --- | --- | --- |
+| [VQA](https://visualqa.org/download.html) | `vlm/datasets/vqa/test2015` | Benign |
+| [USB-Overrefusal](https://huggingface.co/datasets/cgjacklin/USB/tree/main) | `vlm/datasets/usb` | Benign / Pseudo-Malicious |
+| [SD-AdvBench](vlm/datasets/sd_advbench/outputs_new) | `vlm/datasets/sd_advbench` | Malicious |
+
+#### Testing Datasets
+
+| Dataset | Repository Path | Role |
+| --- | --- | --- |
+| [MM-Vet v2](https://github.com/yuweihao/MM-Vet) | `vlm/datasets/mm-vet-v2` | Benign |
+| [MM-SafetyBench](https://huggingface.co/datasets/PKU-Alignment/MM-SafetyBench) | `vlm/datasets/MM-SafetyBench` | Malicious |
+| [FigStep](https://github.com/CryptoAILab/FigStep/tree/main/data/images/SafeBench) | `vlm/datasets/FigStep` | Malicious |
+| [JailBreakV_28K](https://huggingface.co/datasets/JailbreakV-28K/JailBreakV-28k) | `vlm/datasets/JailBreakV_28K` | Malicious |
+
+### 2. Model Weights Preparation
+
+By default, the VLM scripts load model weights directly from Hugging Face:
+
+- LLaVA-1.6-Vicuna-7B: `llava-hf/llava-v1.6-vicuna-7b-hf`
+- Qwen-VL-Chat: `Qwen/Qwen-VL-Chat`
+
+For offline use, pass a local model directory with `--model-name-or-path`.
+  
+
+### 3. Run Detection
+
+```bash
+cd vlm
+
+# Run jailbreak detection evaluation for LLaVA
+python test_AUROC_llava.py 
+
+# Run jailbreak detection evaluation for Qwen-VL
+python test_AUROC_qwen.py
+```
+
 
 
 If you find MTK useful in your research, please consider citing our paper:
