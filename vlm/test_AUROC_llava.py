@@ -1,6 +1,8 @@
 import argparse
 import csv
 from datetime import datetime
+import hashlib
+import json
 from pathlib import Path
 import random
 
@@ -25,6 +27,30 @@ from load_datasets import (
 
 
 MODEL_PREFIX = "llava"
+
+
+def _sample_fingerprint(samples):
+    hasher = hashlib.sha256()
+    for sample in samples:
+        payload = json.dumps(sample, ensure_ascii=False, sort_keys=True, default=str)
+        hasher.update(payload.encode("utf-8"))
+        hasher.update(b"\n")
+    return hasher.hexdigest()
+
+
+def _feature_bank_manifest(args, model, benign_prompts, malicious_prompts):
+    manifest = {
+        "schema_version": 1,
+        "model_name_or_path": str(args.model_name_or_path),
+        "model_revision": getattr(getattr(model, "config", None), "_commit_hash", None),
+        "seed": int(args.seed),
+        "benign_count": len(benign_prompts),
+        "malicious_count": len(malicious_prompts),
+        "benign_samples_sha256": _sample_fingerprint(benign_prompts),
+        "malicious_samples_sha256": _sample_fingerprint(malicious_prompts),
+    }
+    manifest["torch_dtype"] = str(args.torch_dtype)
+    return manifest
 
 
 def model_device(model):
@@ -104,12 +130,24 @@ def extract_features(model, processor, samples, device, desc):
 
 def load_or_build_feature_bank(args, model, processor, device):
     feature_path = args.output_dir / "saved_features_and_labels.pt"
-    if feature_path.exists():
-        loaded_data = torch.load(feature_path, map_location=device)
-        return loaded_data["background_layered_activations"], loaded_data["labels"]
 
+    # Materialize the sampled bank before cache validation so cache hits and
+    # fresh runs consume the same RNG sequence and use the same sampled data.
     benign_prompts = load_vqa_dataset_for_train() + load_usb_datasset_for_train()
     malicious_prompts = load_sd_advbench_for_train()
+    manifest = _feature_bank_manifest(args, model, benign_prompts, malicious_prompts)
+
+    if feature_path.exists():
+        loaded_data = torch.load(feature_path, map_location=device)
+        if loaded_data.get("manifest") == manifest:
+            print(f"Reusing compatible feature cache: {feature_path}")
+            return (
+                loaded_data["background_layered_activations"],
+                loaded_data["labels"],
+                manifest,
+            )
+        print(f"Feature cache provenance mismatch; rebuilding: {feature_path}")
+
     benign_activations = extract_features(
         model, processor, benign_prompts, device, "Extract features of benign samples"
     )
@@ -133,10 +171,11 @@ def load_or_build_feature_bank(args, model, processor, device):
         {
             "background_layered_activations": background_layered_activations,
             "labels": all_labels,
+            "manifest": manifest,
         },
         feature_path,
     )
-    return background_layered_activations, all_labels
+    return background_layered_activations, all_labels, manifest
 
 
 def evaluate_datasets(detector, args):
@@ -228,7 +267,9 @@ def main():
         torch_dtype=torch_dtype,
     )
     device = model_device(model)
-    background_layered_activations, all_labels = load_or_build_feature_bank(args, model, processor, device)
+    background_layered_activations, all_labels, feature_bank_manifest = load_or_build_feature_bank(
+        args, model, processor, device
+    )
     detector = JailbreakDetector(
         model=model,
         processor=processor,
@@ -240,6 +281,7 @@ def main():
         k_nb=args.k_nb,
         max_samples=args.max_samples,
         output_dir=args.output_dir,
+        feature_bank_manifest=feature_bank_manifest,
     )
     evaluate_datasets(detector, args)
 
