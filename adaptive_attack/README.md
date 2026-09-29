@@ -168,7 +168,7 @@ loss, and five evenly spaced lambda values:
 python -m adaptive_attack.examples.run_llama2_batch \
   --model /path/to/Llama-2-7b-chat-hf \
   --feature-library /path/to/reference_bank.pt \
-  --sample-file llm/llm_mtk/datasets/llama2_test/nanogcg_1.json \
+  --sample-file llm/datasets/llama2_test/nanogcg_1.json \
   --output-dir ./adaptive_attack_quick_l3 \
   --max-samples 30 \
   --loss-types l3 \
