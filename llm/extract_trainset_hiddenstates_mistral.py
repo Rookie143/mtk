@@ -64,7 +64,7 @@ def extract_trainset_hiddenstates(
     rebuild_cache=False, force_rebuild_cache=False, k=10,
 ):
     protocol = FeatureProtocol(
-        "mistral", "mistral_7b", ATTACK_FILES,
+        "mistral", "Mistral-7b-instruct-v0.2", ATTACK_FILES,
         benign_train_set_list, malicious_train_set_list,
         TRAINING_ENDPOINT, TEST_ENDPOINT,
         training_line_reader=read_mistral_training_lines,
