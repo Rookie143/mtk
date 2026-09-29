@@ -65,16 +65,32 @@ def load_vqa_dataset_for_train(json_path="./datasets/vqa/OpenEnded_mscoco_test20
     dataset = [[d['question'],os.path.join("./datasets/vqa/test2015",f"COCO_test2015_{str(d['image_id']).zfill(12)}.jpg")] for d in data["questions"]]
     return _safe_sample(dataset, 250, "VQA train")
 
-def load_usb_datasset_for_train():
+def _load_usb_records():
     df = pd.read_csv(
         "./datasets/usb/overfuse_data.csv",
         usecols=["text", "open_url"],
         dtype=str
     )
     df = df.dropna(subset=["text", "open_url"])
-    result_list = df[["text", "open_url"]].values.tolist()
-    result_list = [[r[0],os.path.join("./datasets/usb", r[1])]for r in result_list]
-    return _safe_sample(result_list, 50, "USB train")
+    return [
+        [row[0], os.path.join("./datasets/usb", row[1])]
+        for row in df[["text", "open_url"]].values.tolist()
+    ]
+
+def _split_usb_records(seed=42, train_num=50):
+    records = _load_usb_records()
+    if len(records) <= train_num:
+        raise ValueError(
+            f"USB only has {len(records)} usable samples, "
+            f"but more than {train_num} are required for a disjoint train/test split."
+        )
+    shuffled = list(records)
+    random.Random(seed).shuffle(shuffled)
+    return shuffled[:train_num], shuffled[train_num:]
+
+def load_usb_datasset_for_train(seed=42):
+    train_records, _ = _split_usb_records(seed=seed, train_num=50)
+    return train_records
 
 def load_mm_vet_v2_for_train(json_path="./datasets/mm-vet-v2/mm-vet-v2.json"):
     parent_dir = "./datasets/mm-vet-v2/non_palette_images"
@@ -236,23 +252,16 @@ def load_JailBreakV_JBtxt_SDimg(file_path = "./datasets/JailBreakV_28K/JailBreak
     unsafe_set = _safe_sample(unsafe_set, 218, "JailBreakV_28K")
     return unsafe_set
 
-def load_usb_datasset(is_all=False):
-    dataset_list = []
-    df = pd.read_csv(
-        "./datasets/usb/overfuse_data.csv",
-        usecols=["text", "open_url"],
-        dtype=str
-    )
-    df = df.dropna(subset=["text", "open_url"])
-    result_list = df[["text", "open_url"]].values.tolist()
-    for r in result_list:
-        sample = {
-                "txt": r[0],
-                "img": os.path.join("./datasets/usb", r[1]),
-                "toxicity": 0
-            }
-        dataset_list.append(sample)
+def load_usb_datasset(is_all=False, seed=42):
+    _, test_records = _split_usb_records(seed=seed, train_num=50)
+    dataset_list = [
+        {
+            "txt": text,
+            "img": image_path,
+            "toxicity": 0,
+        }
+        for text, image_path in test_records
+    ]
     if is_all:
         return dataset_list
-    else:
-        return _safe_sample(dataset_list, 218, "USB")
+    return _safe_sample(dataset_list, 218, "USB test")
