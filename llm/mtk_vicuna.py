@@ -235,7 +235,7 @@ def main(argv=None):
         for name in sorted(os.listdir(attack_dir))
         if name.endswith(".json")
     ]
-    model_path = "model/vicuna-7b-v1_5"
+    model_path = "model/Vicuna-7b-v1.5"
     model_dtype = torch.float16 if args.device != "cpu" else torch.float32
     model = AutoModelForCausalLM.from_pretrained(
         model_path,
