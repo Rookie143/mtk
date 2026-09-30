@@ -161,7 +161,7 @@ def extract_features(
             ],
             dim=1,
         )
-        batches.append(layer_features.float().cpu())
+        batches.append(layer_features.detach().cpu())
     return torch.cat(batches, dim=0)
 
 
@@ -193,7 +193,7 @@ def main() -> None:
     torch.save(
         {
             "background_layered_activations": features,
-            "labels": labels,
+            "labels": labels.float(),
         },
         output_path,
     )
