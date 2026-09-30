@@ -99,6 +99,3 @@ python -m adaptive_attack.examples.run_llama2_batch \
   --batch-size 128 \
   --success-judge loose
 ```
-
-Large model weights, `.pt` feature banks, and generated result directories should
-stay local and are not intended to be committed.
