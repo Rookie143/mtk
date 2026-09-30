@@ -1,0 +1,1018 @@
+What type of triangle has three angles of 60 degrees?
+Advantages/disadvantages of buying stocks on dips vs buying outright?
+Am I considered in debt if I pay a mortgage?
+How to calculate tax amounts withheld on mixed pre-tax and Roth 401(k) contributions, and match?
+Describe the relationship between a buyer and a seller.
+Summarize a given document.
+Compare Hitler's rise to power and Stalin's rise to power.
+Create a todo list which you can use to organize daily tasks.
+Can I sell a stock immediately?
+List five benefits of playing a musical instrument.
+Name the movie that begins with the following line
+Translate the following Vigenere cipher
+Explain the importance of data preprocessing in 3 sentences.
+List three ways to improve the safety of a terrain park.
+Describe why robots are used in manufacturing
+How has technology impacted social interactions?
+Can the following statement be considered a valid syllogism? All chickens are mammals, birds are not mammals, therefore all birds are chickens
+Calculate 10% of 180
+Give 5 reasons why computer science is important
+Buying and selling the same stock
+Give two characteristics which distinguish a professional from an amateur.
+Generate a code to achieve the specified outcome
+Explain the difference between the Southern and Northern Lights.
+Generate a title for a article about the diminishing bee population.
+Come up with three basic guidelines for using a social media platform.
+Will a credit card issuer cancel an account if it never incurs interest?
+On a scale from 1 to 5, rate the sentiment of the sentence.
+Create a strategy for social media marketing for a small business.
+Find a sentence that could be used to close a speech about the causes of global warming.
+Is debt almost always the cause of crashes and recessions?
+I'm currently unemployed and have been offered a contract position. Do I need to incorporate myself? How do I do it?
+Generate a non-trivial math problem for a 5th grader to solve.
+Propose measures to improve the given situation.
+Tell me a synonym for 'happy'.
+Write 3 ingredients for a cake.
+What are the benefits of living a healthy lifestyle?
+Outline the steps to make an apple pie.
+For somebody that travels the same route over and over again, what are some ways to save on airfare?
+Write a detailed definition of “Internet of Things (IoT)”
+Make a list of countries in South America.
+Generate an example of satire about the current political situation
+Create one example of how a good user experience will make users come back
+Categorize the following into sentence types
+What is the probabiltiy of being assigned if the call expires in the money
+When the Reserve Bank determines the interest rates, do they take the house prices into account?
+Classify the following items as either a fixed cost or a variable cost.
+How do I evaluate reasonability of home improvement projects?
+Why REIT prices are not going down while bonds are being hammered?
+Generate a haiku poem in 5-7-5 syllable format.
+Construct a rhyming verse that expresses gratitude
+How do I make a small investment in the stock market? What is the minimum investment required?
+Describe the concept of natural language processing.
+What are the best software tools for personal finance?
+Write a 500-word essay about the benefits of a healthy lifestyle.
+Are underlying assets supposed to be sold/bought immediately after being bought/sold in call/put option?
+Describe the painting below.
+Generate a correct SQL query to extract the following data.
+Transform this recipe for "vegetable fried rice" into a vegan version.
+What does “Yield Curve” mean?
+Create a catchy slogan related to food.
+Explain the purpose of a company's quality assurance process.
+Compose a poem that conveys the same emotion as the story.
+what is difference between stock and dividend?
+What is the statement of the Fundamental Theorem of Arithmetic?
+What do you think will be the key drivers of AI adoption in 2021?
+Name three things that a bookkeeper needs to do.
+Calculate the volume of a cube with side length 8 meters
+Find the average age of the participants in this survey.
+Generate a news headline about a recent event.
+When shorting a stock, do you pay current market price or the best (lowest) available ask price?
+What type of investment vehicle is best suited for my long-term wealth goals?
+Categorize the list of items as either clothes or shoes.
+Can I invest in gold through Vanguard (Or another instrument that should perform well in financial crisis)?
+Is it a good investment for a foreigner to purchase a flat/apartment in China?
+Write a few sentences summarizing the story in the following excerpt
+How can I legally and efficiently help my girlfriend build equity by helping with a mortgage?
+Conservative ways to save for retirement?
+Given a passage, find the key theme of the passage.
+Suggest a way to monetize a blog about technology.
+Propose a fictional technology that would improve people's daily lives.
+Given the chemical formula, calculate the molar mass.
+Give five examples of how technology has improved the banking sector.
+Change the following sentence to be grammatically correct.
+Determine the probability of a person's lifespan exceeding 75 years.
+Write the new lyrics for "Happy Birthday".
+Identify the topic for the given paragraph of text.
+Summarize the article  'Discovering the Science Behind Manta Ray Flying'
+Collect 5 relevant sources to support an argument.
+Design a 2D character sprite.
+Use the following words to form a sentence that has a positive connotation.
+Compare and contrast natural and artificial language processing
+Should I invest in the pre-IPO company stock offered by my employer?
+Create an executive summary for the paper.
+Create a 10-step guide for data pre-processing for a machine learning project.
+Construct a survey that meets the given criterion.
+Based on the following data points, identify which type of machine learning algorithm is being used.
+Is the need to issue bonds a telltale sign that the company would have a hard time paying coupons?
+Describe the concept of operational control
+Sort a given list of countries in terms of population from least to greatest.
+How inflation in China makes real exchange rate between China and US to rise?
+Suggest a healthcare policy to improve access to primary care.
+Live in Florida & work remote for a New York company. Do I owe NY state income tax?
+Maintaining “Woman Owned Business” while taking on investor
+Identify two features of the painting.
+Describe the setting of the novel "Pride and Prejudice".
+Why would a car company lend me money at a very low interest rate?
+Rewrite the paragraph given a specific tone.
+List four methods of data collection.
+What is the syntax for a for loop in Python?
+Provide a good opening sentence
+What are some good ways to control costs for groceries?
+What advice would you give to a person who's starting a business?
+Given the name of a country, explain its geography.
+Re-write the proverb in your own words.
+What exactly happens during a settlement period?
+Classify the following figure. Output 1 if it is a rectangle, and 0 if it is not.
+Make a 3D model of a double helix.
+Remove all the vowels from this sentence.
+Name one type of artificial neural network.
+Buy Php in Malaysia and sell to Philippines
+In this task, you will have to classify the following sentence as true or false.
+What is the role of the immune system in maintaining homeostasis?
+Edit a given text by deleting the unnecessary words.
+Buying a home - brokerage fee
+How should I begin investing real money as a student?
+Compute the mean and standard deviation for this set of numbers.
+Write an algorithm to sort an array of unordered numbers.
+What is a text-based user interface (TUI) and how does it work?
+Create a sentence using the words 'dawn', 'sky' and 'vast'.
+Restricting a check from being deposited via cell phone
+Come up with a list of 10 things people can do to conserve energy.
+Could someone explain this scenario about Google's involvement in the wireless spectrum auction?
+How will this product help the customer?
+Come up with a nickname for a person named Joe.
+Given a target text, edit it to make it more descriptive and lively.
+Is the number 3 factors of 8?
+Rewrite the following sentence with the same meaning: "I haven't seen him since last year"
+Write a set of instructions for a game of rock-paper-scissors.
+Identify the theme of Pablo Neruda's poem "If You Forget Me".
+Describe the structure of the ocean floor.
+Generate a product description for a stainless steel kitchen sink.
+Suggest two recipes with the given ingredients.
+Does Implied Volatilty factor in all known future events?
+Generate a random password of length 8 that contains at least one number and one special character.
+Construct a timeline to outline the epochs of the Earth.
+Categorize the following sentences into Yes/No statements.
+Take the following input and create a national parks slogan.
+In a competitive market, why is movie theater popcorn expensive?
+What should I invest in to hedge against a serious crash or calamity?
+Generate a hypothetical thought experiment
+Suggest 3 topics for a speech about human rights
+Reshape the following sentences into one complex sentence using a conjuction.
+Describe a data structure that is suitable for storing a large set of integers.
+Comparing two sports teams performance.
+Assess the following statement: Artificial intelligence is capable of solving all the world’s problems.
+Describe the setting and the characters of a movie
+Consider the following statement, which type of logical fallacy is being used?
+Describe how modern technology has impacted the way people communicate.
+Given a program in Python, find the errors in the program and suggest corrections.
+What is the most important thing to include in a business report?
+Write an expression that evaluates to 0.
+High dividend stocks
+Restructure this sentence to avoid a comma splice.
+Recommendation for learning fundamental analysis?
+Read the given paragraph and indicate the figure of speech being used
+Generate a list of 5 common tools used for product design.
+Describe a character in a movie.
+Given an input of a text, suggest three words that could replace the word "said".
+Create a story about a group of animals traveling to a distant land.
+Create a menu for breakfast.
+In what ways can AI help entrepreneurs?
+Generate a proverb with the words "history" and "actions".
+Buy index mutual fund or build my own?
+Summarize the postcolonial theory.
+Explain what Back Propagation is and how it works.
+Transfering money from NRE to saving account is taxable or not
+Edit the following sentence: "The wind whipped wildly around us."
+Write a 3-4 sentence explanation of how color impacts design.
+What is the title of the fourth Harry Potter movie?
+Name a type of report business organizations must produce.
+Analyze the movie "Back to the Future" and identify the elements of the story that make it a successful film.
+Determine the value of the variable x in the following equation.
+Replace the underlined phrase with a synonym.
+
+He was _bereft_ of his belongings.
+Write a personal message between two friends using the following words.
+What is the scientific name of the honey bee?
+Come up with a headline that summarizes this article.
+Create a 10-step guide on how to start a business.
+Summarize the main arguments in a given article
+Create a timeline of the most important events in the history of modern dance
+Rewrite the following sentence without using the verb "to be".
+Outline the five EU core values.
+Explain what a pin code is, and list some of its advantages.
+Categorize a given text into one of three labels.
+What is the best way to get cash from my retirement accounts for a home down payment?
+Where to Park Proceeds from House Sale for 2-5 Years?
+Generate two analogies related to the word "pen".
+Create a scientific statement based on the following data
+Arrange the sentences in a coherent paragraph.
+Where do countries / national governments borrow money from?
+What kind of jobs would you recommend for a student looking to be flexible and get some work experience?
+Classify the following sentence: "Lettuce is a vegetable."
+Given a sentence and a keyword, edit the sentence such that the keyword sounds more emotionally charged.
+Paid cash for a car, but dealer wants to change price
+Construct a 3-layer neural network
+What do people commonly associate with the color green?
+In the context of a modern office environment, state a problem that can be solved using technology.
+Help a student create a research paper title about "Public Education in the US".
+Suggest a good place for a summer vacation.
+What percentage of my stock portfolio should be international (non-US) stocks?
+Describe a scene where two characters are arguing.
+Output synonyms of the words in the given sentence.
+Convert the given numbers from hexadecimal to binary.
+Name a noun which means the same as 'liar'.
+Given the list of words, how many words of three letters can be formed?
+Name two animals that live in the Indian ocean and give brief description of each.
+Describe the difference between evidence-based policy and convention-based policy.
+Write six original rhymes for the provided word.
+Are cashiers required to check a credit card for a signature in the U.S.?
+Greet the speaker in a professional yet friendly manner.
+Write a code to calculate the average of three integers.
+Create an email subject line for an advertisement.
+Debt collector has wrong person and is contacting my employer
+First time home buyer. How to negotiate price?
+Write a 500 word report summarizing the article: "The Impact of Brexit on the United Kingdom".
+With what are you currently most concerned?
+Summarize an article about the importance of self-care during the pandemic.
+Income tax on my online drop-shipping business (India)
+Research and generate some facts about the Eiffel Tower
+Tell a story about a time when you showed kindness to someone.
+$65000/year or $2500 every two weeks: If I claim 3 exemptions instead of zero, how much would my take home pay be?
+Compare the cost of "Journal A" and "Journal B"
+Create a log-in system for a website.
+Crop a portrait photo to get a square sized output.
+Generate a scenario for an adventure game.
+From the perspective of a customer, write a review of a product you recently purchased.
+How to secure one's effort when working on a contract?
+Compose a poem using keywords such as love, beauty and sorrow.
+Provide the definition of "software architecture"
+Create an output array which is an element wise multiplication of two given arrays.
+Write a short story involving a time machine.
+Importance of dividend yield when evaluating a stock?
+Generate a simile to describe the sound of a train whistle.
+Advice on strategy for when to sell
+Select the incorrect verb below.
+Generate a list of common nouns from the given text
+Who can truly afford luxury cars?
+What type of input does the following command line expect?
+Find the difference in spending between Jan and Feb
+Rewrite the following sentence to make it clear and concise:
+
+At this point in time, we don't have the necessary funds to purchase the equipment that would be required to carry out the project.
+As a total beginner, how do I begin to understand finance & stocks?
+Make a list of five books that explore similar themes.
+Rewrite this sentence "The cat ate the mouse" in active voice.
+Are traders 100% responsible for a stock's price changes?
+Generate the next two words for the sentence "I was walking down
+Reverse the words in the sentence so that they are in the correct order.
+Construct an analogy for the following sentence: "A computer is to code what a chef is to food."
+How can I stop wasting food?
+Detect if there is any bias in the given sentence and explain the type of bias.
+How to shop for mortgage rates ?
+Estimate the total number of English-speaking people.
+Name five characteristics of a typical resume.
+Compute the result of the following equation: (3x + 4y) ÷ 2
+still have mortgage on old house to be torn down- want to build new house
+Generate a short conversation between two people expressing admiration for a third person.
+Write an article describing a new technology.
+Provide an alternate word for this phrase.
+Describe the events of the European colonization of the Americas.
+What is the sum of the first 10 prime numbers?
+Design a workflow for a machine learning system to predict stock prices.
+Describe how facial recognition algorithms work.
+Create a metaphor that compares a person to a flower.
+Generate 3 questions to ask a potential employer during an interview
+Define what a greenhouse gas is.
+What should I do about proxy statements?
+Generate insight from the following data and generate a short summary.
+Does working in finance firms improve a person's finance knowledge?
+Explain the concept of "political landscapes".
+Generate 3 questions related to the following passage.
+Supply a phrase to complete this proverb: "It's better to be safe than ____."
+Rewrite the given sentence so that it creates a more powerful impact.
+Identify the nearest airport based on the given coordinates.
+If I have all this stock just sitting there, how can I lend it out to people for short selling?
+Rewrite this sentence using the active voice: The data was analyzed by the team
+Cheapest USD to GBP transfer
+Find the wrong spelling among the following words.
+How is a triangle classified based on angles?
+Recap the storyline of the movie "The Godfather".
+What one bit of financial advice do you wish you could've given yourself five years ago?
+Rewrite the following sentence in an objective manner.
+What is a pseudocode to calculate the mean of n given values?
+Rank the US states based on the highest percentage of elderly population. Output a list of states with the state name and corresponding percentage.
+Define a modernist movement.
+Rewrite the following expression into a more readable format
+Construct an appropriate SQL query to retrieve the requested data.
+Come up with a creative sentence to describe a summer day.
+Detect hate speech in the following sentence:
+Input a URL and output the domain of that URL, excluding the subdomains.
+Create an algorithm that reverses a string and explain how it works in a paragraph.
+Buying an option in the money, at the money, or out of the money
+What's the difference between buying bonds and buying bond funds for the long-term?
+Transform the given expression into an equation.
+Name three fruits that are rich in Vitamin C.
+Why buy bonds in a no-arbitrage market?
+Suggest five different activities to enjoy during a camping trip.
+Rewrite the sentence with the given word.
+Predict what a person would do if they had a bad day.
+Input a sentence, and output the same sentence with a capitalized i.
+Evaluate this statement: "The film was entertaining but not informative."
+Generate a creative text in 100 words.
+Classify the following statement as an opinion, fact or folklore.
+What data should I collect to calculate market share?
+Given the following verbs and nouns, create a sentence that is grammatically correct: Laugh, House.
+What debts are both partners liable for in a 'community property' state?
+Identity theft?
+Fill in the blank with an adjective that describes the following: A person who enjoys learning new things.
+Using the facts given, generate a summary of the given text
+If one owns 75% of company shares, does that mean that he would have to take upon himself 75% of the company's expenses?
+I have an extra 1000€ per month, what should I do with it?
+Design a game for children about saving money.
+Propose a satisfactory solution to manage air pollution.
+How to account for a shared mortgage in QuickBooks Online?
+Create a program to check if the parenthesis of a string are balanced.
+Why is the bid-ask spread considered a cost?
+Describe the process of data mining using 3-5 sentences.
+Given the following data set, identify the independent and dependent variables.
+I received $1000 and was asked to send it back. How was this scam meant to work?
+Generate a descriptive paragraph about Mt. Everest
+Generate four questions that can be asked to test the applicant's knowledge in mathematics.
+Give five examples of media bias
+List two luxuries you can buy with $1000
+Compose a film review for the last film you watched.
+Construct a sentence that adequately describes a baby duck.
+Identify and explain the difference between a declarative sentence and a question.
+Construct a haiku based on given theme
+Given the following statement, can you identify any possible ethical issues?
+Name two nations that compete in the FIFA World Cup
+Given the features, classify them into categories.
+Long term investment for money
+Rewrite this sentence using another grammatical structure.
+What country currently holds the most nuclear warheads?
+Summarize the article "The Benefits of Working from Home" in 5 sentences.
+Is this trick enough to totally prevent bankrupcy in a case of a crash?
+Using the provided text, change it to more casual language.
+From the following list, name three topics related to fitness.
+Suggest a replacement for fossil fuels
+Write a memo to your boss introducing a new software the team is using.
+Create a poem given a theme of 'Friendship'
+Why would a mutual fund plummet on the same day it pays its annual distribution & capital gains? [duplicate]
+Provide five tips for staying productive.
+Design a web page showing the temperature of a city.
+What does the average log-return value of a stock mean?
+Consolidate my debt? Higher APR, but what does that actually mean?
+Name 5 books that have been converted into movies.
+Can this year's free extension-to-pay be filed electronically? IRS Form 1127
+Calculate the total cost of 5 items if each item costs $10.
+Summarize what happened in chapter 3 of the novel "The Catcher in the Rye"
+Given the following input, suggest a way to optimize the process.
+Answer this true or false question: The capital of France is London.
+Generate names for a list of dishes given some ingredients.
+Classify this article as malicious or not malicious.
+Explain quantum computing in one sentence
+Design a website for promoting new books.
+Generate a sentence about the biggest challenges for AI.
+Construct an algorithm to print the following output.
+Create an example of a complex art photo.
+Give three specific tips to improve your resume
+Write a couple of sentences about the most recent book you've read.
+Explain what a wiki is in your own words.
+Convert the sentence into indirect speech.
+Making an offer on a property - go in at market price?
+Analyze the following sentence for any spelling and/or grammar errors, and provide the correct version of the sentence.
+Create an algorithm to categorize a given set of clothes.
+How to represent “out of pocket” purchases in general ledger journal entry?
+Rewrite the following sentence to emphasize the unit of measurement.
+What are the similarities and differences between the two texts?
+Write a report on the current economic situation in India.
+Name two ways to save money on groceries
+Hearing much about Dave Ramsey. Which of his works is best in describing his “philosophy” about money?
+Given the following input, create a classification statement that describes the input.
+Come up with a story incorporating the following characters and objects.
+State three ways in which technology can be used to improve the education system.
+For what dates are the NYSE and U.S. stock exchanges typically closed?
+Write an imperative sentence providing instruction on opening a door
+Write a sentence about the effect of technology on learning.
+Answer the following math word problem.
+Does Apple have $0 of treasury stock?
+Delete the 3rd sentence from the following following text
+Why is the breakdown of a loan repayment into principal and interest of any importance?
+Best Time to buy a stock in a day
+Summarize the main points of a text.
+Edit the following sentence to make it more effective:
+
+"Our team works hard to develop innovative software."
+What is the most effective saving money method?
+For the given input, classify it into one of the following categories: Political, Entertainment, Economic, Sports, Weather.
+Summarize the poem 'The Road Not Taken' in two sentences
+Identify a type of renewable energy.
+Convert 20 milliliters to tablespoons
+Compare and contrast two different types of database management systems.
+How can I buy shares of oil? I'm told it's done through ETFs. How's that related to oil prices per barrel?
+Describe a single day at the beach.
+Is this investment opportunity problematic?
+Create a password for me that contains one letter, one number, and one symbol.
+Create a website blog post about global warming.
+Edit the following paragrapg to make it suitable for an newspaper article.
+List 5 things you can do to reduce your carbon footprint.
+What are institutional investors?
+Describe how a business could use chatbots to improve customer experience.
+Average Price of a Stock
+Describe a musical instrument.
+Outline a workflow for processing a machine learning model.
+Write a job description for a software engineer.
+Output a sentence with the word given in the input field used appropriately in a context.
+Money-market or cash-type ETFs for foreigners with U.S brokerage account
+Summarize the following article in 90 words: 
+
+
+The internet of things (IoT) is the architecture of the digital world. It connects many devices like smartphones, laptops, and even home appliances, enabling them to communicate with each other. This connectivity enables people to remotely control and monitor the devices, unlocking potential for system scalability, customization, and automation. With IoT, users can easily track, automate, and optimize device performance and energy usage.
+Identify a physical material indicated by the phrase "brittle".
+Construct an SQL query to order customers by their first and last name.
+Is there anything else the customer needs to do to complete their order?
+Create an example of a better email subject line for the following message: "Important Meeting."
+Describe a trait that would make a person successful in the finance industry.
+Categorize the following product as either luxury or necessity.
+Give an example of something that could not be done with a GPT language model.
+Name a tool for connecting with customers on social media.
+Add two sentences to the following story about a bank robbery.
+Identify if the following musical note is a half note.
+Based on the input text, write a persuasive argument supporting the idea that "textbooks should be available for free".
+Design a computer vision model for the following task.
+Come up with an interesting way to travel from one city to another.
+List some of the common symptoms of a given illness.
+List the benefits of quantum computing
+What type of fruit would be a good addition to a fruit salad?
+Rewrite this sentence:
+
+"The quickest way to reach the destination is by airplane."
+Sort these animals into vertebrates and invertebrates. 
+
+Fish, Spider, Cow, Bird
+Can I write off time I spent working on my business?
+When will the U.K. convert to the Euro as an official currency?
+Create a spreadsheet to track sales goals for a business.
+If I invest in securities denominated in a foreign currency, should I hedge my currency risk?
+What is the optimal temperature for red wine?
+Summarize the main topic and purpose of this article.
+Identify the logical fallacy.
+Name three famous authors from the Romantic period.
+Identify the independent and dependent variable in the provided experiment.
+How much time would I have to spend trading to turn a profit?
+Analyze the following sentence and mark all the nouns.
+Could you compare and contrast two different types of learning styles
+Evaluate a recent government policy.
+How to calculate car insurance quote
+Generate a list of five most used keywords in a given article.
+Generate a short description of a hypothetical horror movie.
+Describe a function of the immune system.
+Are warehouse clubs like Costco and Sam's Club worth it?
+Describe an outfit you would wear on a weekend afternoon.
+How to map stock ticker symbols to ISIN (International Securities Identification Number)?
+Create a list of five items based on the given topic.
+Create a Geometric poem.
+Rank the importance of the three items from 1 to 3 (1 being the most important).
+Render a 3D animation of an astronaut spinning a beach ball.
+Generate a list of 8 social media platforms.
+Generate an example for the given task.
+Write a scientific hypothesis that could be tested.
+Write an article comparing the benefits of living in a big city and small town.
+Develop a marketing strategy for an online store.
+How would you describe the current US political situation?
+Identify the key element in this poem.
+Describe how the environment is impacted by rising sea levels.
+Estimate how much time is needed to complete a given task.
+Name 3 countries that speak Spanish as an official language.
+List the five biggest startups in India.
+Create a list of 5 benefits that one can get from using artificial intelligence.
+Generate a creative phrase related to technology
+Can saving/investing 15% of your income starting age 25, likely make you a millionaire?
+What are the financial advantages of living in Switzerland?
+Create a presentation to explain the impact of the internet on society.
+Change the following sentence to past tense: "She is running a marathon".
+Can preventive health checkup be claimed as a separate expense from medical expenses?
+Give an example of how machine learning can be used in logistics.
+Rewrite the following sentence using a different word: "He shuffled his feet in shame."
+Find the missing words to complete the following phrase: Proverbs are ____ of wisdom.
+Generate an appropriate response to this message:
+
+"I'm feeling stuck with my project and I don't know what to do next"
+Is this reply promising a money order and cashier check a scam?
+Create a new sentence using an appropriate conjunction.
+Describe the 3D printing process
+Given a news article, create a headline that captures its main idea.
+Give an example of when a person should trust their gut instinct.
+Write an essay outlining the pros and cons of government intervention in the economy.
+Explain what a "food desert" is and why they are a problem.
+Generate a story with the given protagonist and an unexpected dilemma
+Come up with an eye-catching headline.
+Write a joke about coffee.
+Is it worth it to reconcile my checking/savings accounts every month?
+List the benefits of using power tools
+Can you explain how blockchains work?
+Generate a creative way to encourage people to exercise.
+Rewrite this sentence according to the given style
+Make the following sentence less formal.
+Who wrote the poem "Kubla Khan"?
+Dealing with Form 1099
+Write a review for the film "Once upon a time in Hollywood"
+Generate a list of 5-10 tasks the assistant can complete.
+Create 3 data points for a linear regression model.
+Give me three types of reptiles.
+Select all instances of the word "incredible" in the text and mark them with “<incredible>”
+What causes US Treasury I bond fixed interest to increase?
+Given a sentence, parse it and generate a summary.
+Write a code snippet that adds an item to the end of an array.
+How can I invest in an index fund but screen out (remove) certain categories of socially irresponsible investments?
+Write an algorithm that sorts an array of integers
+Using only five words, describe a movie scene.
+Create a children's story based on a given theme.
+Choose one of the following definitions.
+How to take advantage of record high household debt in Canada?
+1000 pound to invest
+Give three different examples on how artificial intelligence can be used in business.
+Change the sentence so that is positive without changing its meaning.
+Create a magazine headline.
+Is Amazon's offer of a $50 gift card a scam?
+Create a list of adjectives to describe a character who is powerful, wise and determined.
+Give 2 examples of web browsers.
+Propose an experiment to measure the effectiveness of a new advertising campaign for a product.
+Rewrite the following sentence in a more formal style: "It's really exciting to go on vacation."
+Why are the administrative fees for the three biggest donor-advised funds identical?
+Is there a way to set a stop for a stock before you own it?
+Why isn't money spent on necessities deductible from your taxes?
+Make a list of items that would be needed to go on a camping trip
+Please suggest a list of helpful tips related to career development.
+Options for dummies. Can you explain how puts & calls work, simply?
+Create a blueprint for an app that creates memes from user input.
+Are Target Funds Unsafe - Post Q.E.?
+Explain the process of depositing money into a checking account.
+Identify the figure of speech in the sentence: "The wind is my violin and the trees are my strings."
+Suggest safety tips for driving in the winter.
+Provide an example of a test scenario that a company should do with respect to the security of a system.
+Explain the quote using two descriptive sentences.
+Construct an analogy between the concepts of knowledge and power.
+Order the following words in to a grammatically correct sentence
+Determine whether it is possible to factor a given complex polynomial.
+Find the total area of a hexagon with side length of 5cm.
+What are the two main sources of air pollution?
+Hourly rate negotiation tips for paid internship
+Rewrite the following prose poem into a haiku.
+Make a list of 5 materials that can be recycled.
+When buying a call option, is the financial stability of the option writer relevant?
+List 10 sports that can be played outdoors.
+Divide the following polynomial.
+Calculate the surface area of a cube with 4 cm sides
+Create a magnetic headline to advertise the following product.
+Classify the following objects as either a mammal, amphibian, bird, reptile or fish
+Bond ETFs as a means to achieve risk parity
+Given the following context, how would you help a user complete his task?
+What is the area of a rectangular room if its two sides are 10 meters and 7 meters?
+Strategy for accounting personal finance in multiple currency?
+What accounted for DXJR's huge drop in stock price?
+Compare and contrast the use of television advertising in the 2006 and 2008 election cycles
+Describe why gamification is important in education.
+Create a physics equation given the following details.
+Classify this article by type.
+Generate a movie recommendation for a person who likes thrillers and horror.
+Generate a list of ten healthy alternatives to sugary snacks.
+Summarize the key points made by the author in 10-15 words.
+Construct a query to search for the following topic in a database.
+Change the following sentence to the future tense, deleting unnecessary words in the process:
+"I asked her what her favorite color is".
+Table of how many years it takes to make a specified return on the stock market?
+Describe the type of person a manager should select for a customer-facing role.
+Why does FlagStar Bank harass you about payments within grace period?
+Edit this sentence to make it more concise: The movie is long and it feels like it is going on forever.
+Convert the Fahrenheit temperature given in the input to Celsius.
+List five books written by Ayn Rand.
+At what interest rate should debt be used as a tool?
+Generate a list of ten animal names.
+Generate questions based on the following sentence
+Formulate an argument for or against a given action.
+Given a list of facts and the topic, compose a paragraph.
+Suggest a menu for a 3 course meal.
+UK Limited Company paying third party medical costs
+Write an April Fool’s joke or prank.
+Generate a sentence with appropriate grammar and usage.
+Design 3 questions that can be used to gather information about the given topic.
+How many days does Bank of America need to clear a bill pay check
+Lease vs buy car with cash?
+List some safety tips when swimming in open water.
+Summarize the story of the movie The Night Before Christmas in 100 words.
+Greet someone who just entered a room.
+Explain what a Monte Carlo simulation is.
+Generate a story about two friends who become rivals.
+Generate a unique password for the user.
+Identify a strategy for improving customer service.
+Check that the paragraph is correctly punctuated
+Construct an SQL query to query the average age of all customers
+More money towards down payment versus long-term investments
+Classify the word "trousers"
+Generate a story about a scientist using the phrase “the mad scientist”.
+Explain the concept of Virtual Reality
+Name four artificial intelligence (AI) technologies.
+Re-write the sentence using third-person singular form, output the sentence.
+Why invest in becoming a landlord?
+Construct a sentence describing a person with the following adjectives: generous, reliable, and humorous.
+Reverse the following sentence using an antonym.
+Suggest two exercises that can help strengthen the shoulder muscles.
+Generate the missing part of the following SQL query.
+Create a list of 3 characteristics of an effective leader.
+How do you find out who the investors are in a U.S. stock? e.g. how ownership may be concentrated?
+Opening and funding an IRA in three days - is this feasible?
+Why is tax loss harvesting helpful for passive investing?
+Tell me what a Hemangioma is and how it is treated.
+Generate a creative and snappy headline for this article about travel tips.
+Given a user input about PlayStation 5, provide a comparison of the console's capabilities to the Xbox Series X.
+Reorder the two sentences to form one logical phrase.
+Find the percentage rate of increase of the values given below.
+Outline the steps a startup would need to take to increase brand awareness
+Generate 100 words summary for the following article
+Should I invest in the pre-IPO company stock offered by my employer?
+Classify the following sentence: The toy was red and blue.
+Where do countries / national governments borrow money from?
+Estimate the height of the world's tallest peak.
+income tax for purchased/sold short term & long term shares
+Do companies only pay dividends if they are in profit?
+Quote the following meme.
+Come up with a clever marketing slogan for a new financial management app.
+What is the main purpose of the American with Disabilities Act?
+Rewrite the paragraph using more descriptive language.
+Change a sentence using the appropriate form.
+Choose the correct answer for the fill-in-the-blank space.
+What are the implications of a corporate stock repurchase or share buyback program?
+Name five schools that offer online courses.
+Generate a mnemonic to help remember the following list
+Create a list of 10 ethnic dishes to serve on a dinner menu.
+Analyze the following text and tell me what kind of purpose it has.
+Create a script for a radio advertisement for a restaurant.
+When does a pricing error become false advertising?
+Identify any 5 key characteristics of the following software
+Summarize the article about the new court ruling.
+Write a children's story about a magical world.
+Changing Bank Account Number regularly to reduce fraud
+Are credit cards not viewed as credit until you miss one payment?
+Generate 5 words related to the given noun.
+Is Bogleheadism (index fund investing) dead?
+Write a function to find the longest common substring of two strings.
+List three ideas for improving customer service
+Name 3 characters in the movie Frozen.
+Write a letter to a friend about a bad experience you had.
+What school of thought do pragmatists belong to?
+Boyfriend is coowner of a house with his sister, he wants to sell but she doesn't
+Generate a story based on a ballerina who embarks on a quest to save her family.
+Create a definition for the term "affinity marketing."
+Spelling check the given sentence.
+Why would you ever turn down a raise in salary?
+Is it legal for a vendor to reuse credit details from a previous transaction
+Read the sentence and identify the figure of speech.
+Take this sentence and make it more descriptive: She was scared.
+Is losing money in my 401K normal?
+Write a story that ends with the phrase, "the sun rose and he was gone."
+What am I actually buying when trading in CFDs
+Find the first two prime numbers between 11 and 21.
+Where can I trade FX spot options, other than saxobank.com?
+Complete the sentence using the right form of the verb.
+23 and on my own, what should I be doing?
+Suggest three techniques for improving online learning
+Increase the difficulty of this math problem.
+What can I use to store books so they don't take up too much space?
+If you needed to produce a report quickly, what steps would you undertake?
+Select the synonym for "tiny".
+Put the verbs in the parentheses in the correct tenses
+Calculate 17 + 18.
+Categorize the following items as a either a fruit or a vegetable: Eggplant, Pear
+Know the number and type of facial features.
+Given a string of text, identify the sentiment of the text. Output 'positive', 'negative' or 'neutral'
+Rewrite the sentence with more descriptive words.
+Why is mortgage interest deductible in the USA for a house you live in?
+Write a Python program to print the calendar for the year 2025.
+Get car loan w/ part time job as student with no credit, no-cosigner but no expenses
+Make a clear statement regarding the given information.
+Name two features that you should look for in a good laptop.
+Calculate the average word length in the given text.
+Compare the benefits and risks of eating house.
+Are lottery tickets ever a wise investment provided the jackpot is large enough?
+Short selling - lender's motivation
+What will happen if this code reaches the breakpoint?
+Name a famous movie with the input name
+Does the P/E ratio not apply to bond ETFs?
+Think of a creative way to transport a car from Denver to Texas.
+Arrange the following list of ingredients into five separate recipes.
+Explain why one should use the given tool.
+Create a brief paragraph to describe a modern consumer shopping experience.
+Provide 3 fun facts about the Grand Canyon.
+What factors go into choosing residency?
+Terminology: What are the labels associated with a share called?
+Name two tools used for data mining.
+Perform basic calculations and output the result.
+Order the given events chronologically.
+Name three characteristics of tropical rainforests.
+Create a sentence using the words "consistency" and "success" in the same sentence.
+Using the input below, rewrite the story as a first person narrative.
+Confused about employee stock options: How do I afford these?
+Strategies for saving and investing in multiple foreign currencies
+How can I help my friend change his saving habits?
+Is there a law or regulation that governs the maximum allowable interest amount that can be charged on credit cards or in agreements where credit is extended?
+Suppose you are shopping online and you find a product you like. Write a product review.
+What advice  would you give to a child just starting school?
+What financial data are analysed (and how) to come up with a stock recommendation?
+Paying estimated taxes in a quarter with losses
+Describe how Plato's theory of forms explains the concept of justice.
+Name three common types of atmospheric pressure
+Rewrite the following sentence ensuring it is grammatically correct: "They do not need no help."
+Transcribe the following sounds:
+Provide a set of instructions for a user to determine the area of a trapezoid.
+What is the most important thing a leader needs to do to be successful?
+Categorize each type of animal based on its physical characteristics.
+How to know precisely when a SWIFT is issued by a bank?
+Given a list of items, create a to-do list.
+List a few uses of Machine Learning in industry.
+Name a negative emotion
+What is the point of owning a stock without dividends if it cannot be resold?
+Summarize these two sentences in one sentence.
+Given a sentence, explain how it could be misinterpreted
+Name a movie that is directed by Christopher Nolan
+Give advice to a colleague on how to show leadership.
+Multi-Account Budgeting Tools/Accounts/Services
+Suggest two tactics to increase accessibility and usability of a mobile application.
+Provide a short summary of the following book review.
+Gym membership tax deductible?
+Generate 5 questions from the following essay.
+What is the benefit of using a neural network for computer vision tasks?
+Describe the painting and its subjects.
+Given a product description, what is the category of this product?
+Categorize the following text according to the topics "sports", "food", or "movies".
+Generate a wish for someone's birthday.
+Can I save our credit with a quickie divorce?
+Identify five reasons why going to school is important
+Find out which technology company has the most employees.
+What are the contents of fixed annuities?
+Make a list of five new ideas for YouTube videos
+Compare and contrast horror movies from the 70s to ones made today.
+List two proverbs about friendship.
+Does the stock market create any sort of value?
+Higher returns from international markets?
+Edit the following text in a formal style.
+How come I can't sell short certain stocks? My broker says “no shares are available”
+Should I start investing in property with $10,000 deposit and $35,000 annual wage
+Sort the following numbers in descending order: [1, 5, 11, 8]
+Name two kinds of mammals.
+Suggest a creative idea to complete the following task.
+Given an existing piece of artwork, come up with a title for it.
+Add together 3.7 and 6.2.
+Create a data table of countries located in Oceania
+Describe the challenges facing the given industry in 4 sentences.
+What can make a stock price rise without good news or results?
+Design an AI technology capable of solving a given problem.
+What is the formula for calculating kinetic energy?
+Help! I've cancelled their service, but this company continues to bill my credit card an annual fee. What can I do?
+Edit the following sentence to make it more concise: The train was more than one hour late and the passengers were very unhappy.
+Given a list of books, give the names of the authors
+Is it better to use DRIP or invest when stock drops before ex-date?
+Summarize the article on self-motivation.
+Come up with a list of character traits that describe the main protagonist of the story.
+Why are big companies like Apple or Google not included in the Dow Jones Industrial Average (DJIA) index?
+Generate a description of a new cryptocurrency.
+Suggest 3 equipment for camping
+Equity market inflow meaning
+Explain how a certain physical phenomenon works.
+ESPP advantages and disadvantages
+Create an outline for a movie about a college student.
+Explain why Hebb's Rule is important in artificial neural networks.
+Provide a one sentence explanation of the term "net neutrality"
+Design an infographic on a given topic
+Provide five synonyms for the word "positive".
+Generate a poem with 10 lines.
+List three ways to cook sweet potatoes.
+Fill in the blank for these fill-in-the-blank questions.
+Develop a web page for a business to increase customer engagement.
+What factors should consider when building an AI-enhanced camera system?
+How exactly could we rank or value how “rich” a company brand is?
+Convert the following time into 12-hour format: 18:45
+Edit the sentence for correct punctuation and capitalization
+Construct a thesis statement on the impact of media on society.
+Given a sentence, check for grammatical errors.
+Generate a phrase that expresses injustice
+Generate an essay discussing the benefits of online education compared to traditional education.
+Generate a creative title for a podcast episode.
+Explain the consequences of a monopoly.
+Live in California but work for Illinois-based company
+Generate a new sentence which follows the given one.
+Generate a silly rule that could be implemented in your office space.
+As an independent contractor, should I always charge the client the GST/HST?
+Recommending a movie - find a suitable movie for me to watch.
+Classify the following sentence as a statement, command, exclamation or question: "Did you understand the question?"
+To what degree do data analytics improve business operations?
+Generate an appropriate antonym to the word "happy".
+Give an example of an event that could represent a new beginning
+Rewrite the following statement so it's more concise: "We must remember that the food that we eat can have an impact on our health."
+Compose a tweet with the following keywords: 'online learning'
+Generate a list of three measures to increase customer satisfaction
+Name three types of musical instruments belonging to the brass family.
+Name an animal that can live in cold climates.
+Imagine you are a beautician. Create a beauty routine for a typical 30-year-old woman.
+What's a normal personal debt / equity ratio for a highly educated person?
+Construct the the following sentence improving its flow.
+Describe the process of hydropower generation in a few sentences.
+Car finance (loan) insurance requirements (store car)
+Find the top three movies according to IMDb score.
+Assess the credibility of the following website: wikipedia.org
+What invention in the 20th century made the most significant impact on the world?
+Explain the benefits of working remotely.
+Create a prototype UI for an online shop.
+Create a historical fact about the civil war.
+Generate an advertising slogan for a given product
+Describe the differences between Eastern and Western cultures.
+Got a large cash sum, wanna buy stocks. Should I buy all at once, or spread it over time?
+Give an example of a country with an effective health care system.
+Find similarities between the given items and output a prediction on how they may interact.
+Analyze the cooperation between A and B.
+Compare and contrast the 2 sports
+High-risk investing is better for the young? Why?
+Construct a calendar of events for the given month
+Given a political statement, classify it as liberal or conservative
+Write an informal email to your friend about an upcoming event.
+Explain the limitations of using GPT models compared to other types of natural language processing models.
+Buy securities at another stock exchange
+In this task, generate an example for "exploring new places".
+Why are typical 401(k) plan fund choices so awful?
+Craft a story from the following three words: Moon, Whale, Balloon
+Is there a law or regulation that governs the maximum allowable interest amount that can be charged on credit cards or in agreements where credit is extended?
+Think of a way to make a boring task more enjoyable.
+Calculate the perimeter of this rectangle
+Give two examples of compounds containing a carbon-hydrogen bond.
+Generate a CV for a software developer using the information below.
+List the most important tools for developing effective page layouts.
+Explain the main arguments on both sides of a current controversy.
+What is an ideal number of stock positions that I should have in my portfolio?
+Classify the following sentence as referring to the past, present or future.
+Generate a movie or a book title based on the 2 adjectives below.
+Summarize the main characters' traits.
+Categorize the following points as either advantages or disadvantages of using artificial intelligence.
+State whether the following statement is true or false: Apple was founded in 1976.
+Edit the sentence to make formal.
+Analyze the given text for the chief theme.
+Explain the difference between a relational database and a non-relational database.
+Describe the similarities and difference between cats and dogs.
+Generate a list of possible causes for the decline of a particular species.
+Generate a list of three delicious dinner recipes.
+Edit the following sentence so that it is more concise and grammatically correct.
+
+I am a teacher and I likes to teach
+Loan to S-Corp cannot be paid back, how to deduct from personal taxes?
+Identify the major environmental problems humanity is facing
+Is it a good practice to keep salary account and savings account separate?
+Complete the sentence using the word "clutching", using the given sentence context.
+Create an article on how computer vision is used in medical imaging.
+Design a machine learning algorithm for predicting the price of a house.
+Walking away from an FHA loan
+Write two lines of iambic pentameter.
+Analyze the following piece of text and explain why it would be considered persuasive.
+Fill in the blanks with appropriate words.
+What is an object-oriented programming language?
+How should I report my RSUs in my tax return
+If I want to take cash from Portugal to the USA, should I exchange my money before leaving or after arriving?
+Prepaying a loan: Shouldn't the interest be recalculated like a shorter loan?
+Predict what the value of the given variable will be after subtracting 5.
+How can bioinformatics predict gene function?
+Evaluate the following polynomial 3x2 + 6x - 5
+What ways are there for us to earn a little extra side money?
+Output a sentence that uses the words provided in the input field in a creative way.
+Explain why it is important for computer users to not download pirated software.
+Wash sale rule question
+Name a restaurant serving Italian food in the city of Las Vegas
+Prize Money, Taxes and Foreign / International Students
+Generate a menu for a traditional Thanksgiving dinner.
+Detail the advantages of competing in an international market.
+Provide an example of a French musical term.
+Generate a list of 10 ways to be kind to the environment.
+Convert the duration below to minutes.
+Compose a short poem about summer that includes the phrase "Summer breeze".
+Lump sum annuity distribution — do I owe estate tax?
+Divide 856 by 12.
+Selling equities for real-estate down payment
+Do mutual fund companies deliberately “censor” their portfolios/funds?
+Name five countries and their capitals.
+Generate a song title.
+How can a credit card company make any money off me? I have a no-fee card and pay my balance on time
+Design an algorithm that prints the first n prime numbers.
+Create an algorithm for converting an integer to a string.
+Is robinhood backed up by an insurance company
+Write a few words in progress with their meanings.
+Will there always be somebody selling/buying in every stock?
+Can a GPT-3 model learn to give legal advice?
+Explain how neural networks learn.
+Explain what is a Block Chain.
+Insert a relevant quote in the following text.
+How does a financial advisor choose debt funds and equity funds for us?
+Identify which parts of the following code could be refactored.
+Describe the life of a typical pre-school child in 200 words or less.
+What happens to 401(k) money that isn't used by the time the account holder dies?
+Identify a con for this product.
+Translate the following sentence into French: I wanted to go for a walk.
+Formulate a design plan for a user interface.
+Change this sentence into the future tense.
+Identify the incorrect phrase in the following sentences:
+Evaluate the argument in the given paragraph.
+Construct a vocabulary list of ten words related to "geography".
+Write a short summarization of the following text.
+Determine the correct punctuation.
+Write a regex expression to get all the names that start with A in the following list.
+Why would a bank take a lower all cash offer versus a higher offer via conventional lending?
+Are there any Social Responsibility Index funds or ETFs?
+Using the given clues, try to guess the word
+Identify the grammatical category of the underlined word: She went to the beach.
+Transform the given statement into an imperative one.
+List 3 elements of a good security practice for a business.
+Rewrite the given poem in a more modern style.
+How does a TFSA work? Where does the interest come from?
+Translate "it is not raining" into Spanish
+What did Sigmund Freud's psychoanalytic theory emphasize?
+Is it accurate to say that if I was to trade something, my probability of success can't be worse than random?
+Create a list of three questions to ask a robot in order to better understand its decision-making process.
+Create a metaphor to describe a storm.
+Calculate the mean of the numbers 3, 4, 6, 10, 11
+Construct a definition for the term "AI."
+Create a list of 10 tips to help someone improve their coding skills.
+Explain why this character's behavior is justified.
+What is the true value, i.e. advantages or benefits, of building up equity in your home?
+Suggest a funny riddle.
+Share two tips on how to write concisely.
+Suggest an animal to be chosen as a pet
+What is the main source of energy for the human body?
+Write a paragraph describing the basic principles of psychoanalysis.
+Name a related tool for the given task.
+Given a list of ingredients, suggest a dish that can be created using those ingredients.
+New 1099 employee with Cobra insurance
+How can I profit on the Chinese Real-Estate Bubble?
+What are the implications of lending money to my sole member S-corp?
+Write down a set of practices that a fast food restaurant can implement to reduce food waste.
+Describe the location of the Taj Mahal. Output less than 100 words.
+Calculate the area of the triangle given its sides are 5 cm, 10 cm, and 8 cm.
+Given a set of data, generate a report highlighting the key findings.
+What type of capital did the company have?
+Please suggest a more concise version of the sentence.
+Design an intuitive user experience for a banking app.
+Given the input, classify the object into a type.
+Describe the concept of price elasticity of demand.
+Name 3 ways in which animals can adapt to their environment.
+Is Amazon's offer of a $50 gift card a scam?
+Make a 3 sentence summary of the movie Avatar
+Do I have to pay a capital gains tax if I rebuy different stocks?
+Generate a list of mechanical engineering topics
+Create a flower arrangement for a birthday party.
+Come up with a step-by-step guide for setting up a website.
+What ETF best tracks the price of gasoline, or else crude oil?
+Determine the correlation coefficient between the two variables.
+New to options trading and need help understanding an options spread risk graph. What am I missing?
+Wardrobe: To Update or Not? How-to without breaking the bank
+Create a poem using the theme 'the beauty of nature.'
+Outline an itinerary for a three day trip.
+Create a class that implements the following interface: Person
+How to work around the Owner Occupancy Affidavit to buy another home in less than a year?
+Given this sentence, generate the stem for each word in the sentence.
+What type of reward system would benefit the employees?
+Create an sentence that follows the given structure: Noun + verb + adverb + adverb + verb.
+Generate a haiku poem using the given words and no additional words.
+Construct a regular expression to identify strings that start with the letter "s".
+Describe two main steps in natural language processing.
+Generate a 3-month budget plan for a household of 4.
+Generate a film title to represent a genre that combines fantasy and romance.
+Suggest a title for a fantasy novel set in a Middle Ages style world.
+What is down -34% in stock terms?
+Translate the following sentence into Spanish: "I am very excited to learn Spanish."
+Write a review for a book you read last month.
+Which type of market structure is the US automobile industry?
+Is foreign stock considered more risky than local stock and why?
+Imagine you have a garden in your backyard. What plants would you grow in it?
+What will my taxes be as self employed?
+Create a list of 10 items for an outdoor camping trip.
+Name one benefit of using a lead scoring system.
+What is the history behind the painting 'The Starry Night'?
+Does Joel Greenblatt's “Magic Formula Investing” really beat the market?
+Extend the following paragraph with additional information
+Research and explain the given topic.
+Create a a punchline based on the given statement.
+Which animals can you find in the African savanna?
+Construct a recipe for banana pancakes
+How to diversify IRA portfolio given fund minimum investments and IRA contribution limits?
+super confused about bid and ask size. help
+What are the three major pieces of software that are used in web development?
+Expecting to move in five years; how to lock mortgage rates?
+Construct a sentence using the words "backbone," "pillar," and "foundation."
+Write a customer service reply to the following complaint.
+Calculating Future Value: Initial deposit and recurring deposits of a fixed but different Value
+Replacement for mint.com with a public API?
+Do algorithmic traders make money from short-term or long-term gains?
+Decompose the following polygon into smaller polygons.
+Why might a robo-advisor service like Betterment be preferable to just buying a single well-performing index fund like SPY?
+Create a list of five questions about the ocean
+Create a cool science project for a 5th grade student.
+How can I legally and efficiently help my girlfriend build equity by helping with a mortgage?
+Tax liability in US for LLC's owned by an Indian Citzen
+Find the links between the following three words: buffalo, cattle, and horse.
+What is the best explanation for why we should conserve energy?
+Online stock screener to find stocks that are negatively correlated to another stock/index?
+Given a sentences, identify the subject and the object.
+How could I find someone to find a room for me to live in? (For a fee, of course.)
+Create a data analysis report from the given dataset.
+Given a list of emotions, narrate a story depicting the mixed emotions.
+can the government or debt collectors garnish money from any bank account to which the debtor has access?
+List the top five countries with the highest GDP.
+what is this type of stock trade?
+Explain the main differences between an AI model and a Machine Learning Model.

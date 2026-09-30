@@ -22,16 +22,22 @@ Environment variables:
   DTYPE        Torch dtype. Default: float16
   BATCH_SIZE   Feature extraction batch size. Default: 4
   JSON_ONLY    Set to 1 to generate only the intermediate JSONL.
+  REFERENCE_SEED
+              Optional random seed for sampling. Unset matches the original
+              unseeded random.sample behavior.
 
 Default reference-bank composition:
   benign:
+    300 non-refusal samples
+    300 normal_ood samples
+    300 normal samples
     300 Databricks-Dolly samples
-    300 Alpaca samples
-    600 non-refusal samples
   malicious:
-    100 AdvBench samples
-    100 MaliciousInstruct samples
-    600 PKU-SafeRLHF samples
+    up to 200 AdvBench samples
+    up to 200 MaliciousInstruct samples
+    up to 200 PKU-SafeRLHF 3-6k samples
+    up to 200 PKU-SafeRLHF samples
+    up to 200 UltraSafety samples
 
 Example:
   CUDA_VISIBLE_DEVICES=0 PYTHON_BIN=/path/to/python \
@@ -70,59 +76,14 @@ echo "[build_llama2_reference_bank] device: $DEVICE"
 echo "[build_llama2_reference_bank] dtype: $DTYPE"
 echo "[build_llama2_reference_bank] batch_size: $BATCH_SIZE"
 
-JSONL_PATH="$JSONL_PATH" "$PYTHON_BIN" - <<'PY'
-import json
-import os
-from pathlib import Path
-
-output = Path(os.environ["JSONL_PATH"])
-output.parent.mkdir(parents=True, exist_ok=True)
-
-benign_sources = [
-    ("llm/datasets/train_data/databricks-dolly-15k.txt", 300),
-    ("llm/datasets/train_data/alpaca.txt", 300),
-    ("llm/datasets/train_data/non_refusal_prompts_with_responses_80k.txt", 600),
-]
-
-malicious_sources = [
-    ("llm/datasets/train_data/AdvBench.txt", 100),
-    ("llm/datasets/train_data/MaliciousInstruct.txt", 100),
-    ("llm/datasets/train_data/PKU-SafeRLHF-prompts_3-6k.txt", 600),
-]
-
-
-def read_first_nonempty(path: str, count: int) -> list[str]:
-    source = Path(path)
-    if not source.is_file():
-        raise FileNotFoundError(f"missing source file: {source}")
-    lines = [
-        line.strip()
-        for line in source.read_text(encoding="utf-8").splitlines()
-        if line.strip()
-    ]
-    if len(lines) < count:
-        raise ValueError(f"{source} has only {len(lines)} non-empty lines; need {count}")
-    return lines[:count]
-
-
-benign_count = 0
-malicious_count = 0
-with output.open("w", encoding="utf-8") as file:
-    for path, count in benign_sources:
-        for text in read_first_nonempty(path, count):
-            file.write(json.dumps({"text": text, "label": 1}, ensure_ascii=False) + "\n")
-            benign_count += 1
-
-    for path, count in malicious_sources:
-        for text in read_first_nonempty(path, count):
-            file.write(json.dumps({"text": text, "label": 0}, ensure_ascii=False) + "\n")
-            malicious_count += 1
-
-print("saved_jsonl:", output)
-print("benign_count:", benign_count)
-print("malicious_count:", malicious_count)
-print("total_count:", benign_count + malicious_count)
-PY
+if [[ -n "${REFERENCE_SEED:-}" ]]; then
+  "$PYTHON_BIN" -m adaptive_attack.examples.build_llama2_reference_jsonl \
+    --output "$JSONL_PATH" \
+    --seed "$REFERENCE_SEED"
+else
+  "$PYTHON_BIN" -m adaptive_attack.examples.build_llama2_reference_jsonl \
+    --output "$JSONL_PATH"
+fi
 
 if [[ "${JSON_ONLY:-0}" == "1" ]]; then
   echo "[build_llama2_reference_bank] JSON_ONLY=1, skip .pt feature extraction."
