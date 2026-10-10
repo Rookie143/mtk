@@ -11,11 +11,11 @@ All reported attack-success metrics use the loose judge.
 
 | Loss | Lambda | Samples | ASR loose | TPR | eASR loose |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| L3 | 0.1 | 30 | 80.0% (24/30) | 96.7% (29/30) | 3.3% (1/30) |
+| L3 | 0.1 | 30 | 70.0% (21/30) | 100.0% (30/30) | 0.0% (0/30) |
 | L3 | 0.3 | 30 | 70.0% (21/30) | 96.7% (29/30) | 3.3% (1/30) |
-| L3 | 0.5 | 30 | 60.0% (18/30) | 100.0% (30/30) | 0.0% (0/30) |
-| L3 | 0.7 | 30 | 60.0% (18/30) | 96.7% (29/30) | 3.3% (1/30) |
-| L3 | 0.9 | 30 | 56.7% (17/30) | 100.0% (30/30) | 0.0% (0/30) |
+| L3 | 0.5 | 30 | 70.0% (21/30) | 90.0% (27/30) | 3.3% (1/30) |
+| L3 | 0.7 | 30 | 56.7% (17/30) | 100.0% (30/30) | 0.0% (0/30) |
+| L3 | 0.9 | 30 | 53.3% (16/30) | 86.7% (26/30) | 3.3% (1/30) |
 
 `ASR loose` is the jailbreak success rate before MTK filtering. `TPR` is the MTK
 detection rate on adversarial prompts. `eASR loose` is the jailbreak success
@@ -39,10 +39,13 @@ Build the MTK reference bank:
 
 ```bash
 CUDA_VISIBLE_DEVICES=0 \
+REFERENCE_SEED=27 \
 bash adaptive_attack/examples/build_llama2_reference_bank.sh \
   "$LLAMA2_MODEL" \
   adaptive_attack/reference_bank.pt
 ```
+
+`REFERENCE_SEED=27` matches the default Llama2 MTK training split.
 
 Run the 30-sample quick validation:
 

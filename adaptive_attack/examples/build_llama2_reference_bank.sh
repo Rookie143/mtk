@@ -23,21 +23,17 @@ Environment variables:
   BATCH_SIZE   Feature extraction batch size. Default: 4
   JSON_ONLY    Set to 1 to generate only the intermediate JSONL.
   REFERENCE_SEED
-              Optional random seed for sampling. Unset matches the original
-              unseeded random.sample behavior.
+              Sampling seed. Default: 27, matching the main Llama2 MTK setting.
 
 Default reference-bank composition:
   benign:
-    300 non-refusal samples
-    300 normal_ood samples
-    300 normal samples
     300 Databricks-Dolly samples
+    300 Alpaca samples
+    200 non-refusal samples
   malicious:
-    up to 200 AdvBench samples
-    up to 200 MaliciousInstruct samples
-    up to 200 PKU-SafeRLHF 3-6k samples
-    up to 200 PKU-SafeRLHF samples
-    up to 200 UltraSafety samples
+    100 AdvBench samples
+    100 MaliciousInstruct samples
+    600 PKU-SafeRLHF 3-6k samples
 
 Example:
   CUDA_VISIBLE_DEVICES=0 PYTHON_BIN=/path/to/python \
@@ -64,6 +60,7 @@ PYTHON_BIN="${PYTHON_BIN:-python}"
 DEVICE="${DEVICE:-cuda}"
 DTYPE="${DTYPE:-float16}"
 BATCH_SIZE="${BATCH_SIZE:-4}"
+REFERENCE_SEED="${REFERENCE_SEED:-27}"
 
 cd "$REPO_ROOT"
 
@@ -75,15 +72,11 @@ echo "[build_llama2_reference_bank] python: $PYTHON_BIN"
 echo "[build_llama2_reference_bank] device: $DEVICE"
 echo "[build_llama2_reference_bank] dtype: $DTYPE"
 echo "[build_llama2_reference_bank] batch_size: $BATCH_SIZE"
+echo "[build_llama2_reference_bank] reference_seed: $REFERENCE_SEED"
 
-if [[ -n "${REFERENCE_SEED:-}" ]]; then
-  "$PYTHON_BIN" -m adaptive_attack.examples.build_llama2_reference_jsonl \
-    --output "$JSONL_PATH" \
-    --seed "$REFERENCE_SEED"
-else
-  "$PYTHON_BIN" -m adaptive_attack.examples.build_llama2_reference_jsonl \
-    --output "$JSONL_PATH"
-fi
+"$PYTHON_BIN" -m adaptive_attack.examples.build_llama2_reference_jsonl \
+  --output "$JSONL_PATH" \
+  --seed "$REFERENCE_SEED"
 
 if [[ "${JSON_ONLY:-0}" == "1" ]]; then
   echo "[build_llama2_reference_bank] JSON_ONLY=1, skip .pt feature extraction."
