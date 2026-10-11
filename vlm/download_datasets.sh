@@ -82,7 +82,6 @@ hf_download() {
   if ! "$hf_cli" download "$repo_id" \
     --repo-type "$repo_type" \
     --local-dir "$output_dir" \
-    --local-dir-use-symlinks False \
     "$@"; then
     warn "failed to download ${repo_id}. If this is a gated dataset, run 'huggingface-cli login' and accept the dataset terms on Hugging Face first."
     FAILED=1
