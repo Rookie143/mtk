@@ -21,12 +21,13 @@
 
 ## Repository Structure
 
-| Path | Purpose |
-| --- | --- |
-| [`llm`](llm) | MTK detection and evaluation scripts for LLMs. |
-| [`vlm`](vlm) | MTK detection and evaluation scripts for VLMs. |
-| [`adaptive_attack`](adaptive_attack) | Standalone adaptive attack against MTK with `L1`/`L2`/`L3` evasion losses. |
-| [`llm/datasets/train_data`](llm/datasets/train_data) | Pseudo-malicious prompt (PMP) data used in the LLM experiments. |
+| Path                                                 | Purpose                                                                    |
+|------------------------------------------------------|----------------------------------------------------------------------------|
+| [`llm`](llm)                                         | MTK detection and evaluation scripts for LLMs.                             |
+| [`vlm`](vlm)                                         | MTK detection and evaluation scripts for VLMs.                             |
+| [`pseudo_malicious`](pseudo_malicious)               | MTK detection and evaluation scripts for pseudo-malicious prompts.         |
+| [`adaptive_attack`](adaptive_attack)                 | Standalone adaptive attack against MTK with `L1`/`L2`/`L3` evasion losses. |
+| [`llm/datasets/train_data`](llm/datasets/train_data) | Pseudo-malicious prompt (PMP) data used in the LLM experiments.            |
 
 
 ## 📋 Environment Requirements
