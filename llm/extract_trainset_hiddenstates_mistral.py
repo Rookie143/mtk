@@ -6,9 +6,9 @@ import torch
 from feature_protocol import FeatureProtocol, render_prompts, set_determinism
 
 
-ATTACK_FILES = ["JailJudge_all_1.json", "ijp_1.json", "nonagcg_1.json", "autodan_1.json", "drattack_1.json", "pair_1.json", "pap_gpt3.5_1.json", "pap_gpt4_1.json", "pap_llama2_1.json", "saa_1.json", "tap_1.json", "zulu_1.json"]
+ATTACK_FILES = ["JailJudge_all_1.json", "ijp_0.json", "nonagcg_1.json", "autodan_1.json", "drattack_1.json", "pair_1.json", "pap_gpt3.5_1.json", "pap_gpt4_1.json", "pap_llama2_1.json", "saa_1.json", "tap_1.json", "zulu_1.json"]
 TRAINING_ENDPOINT = "mistral_slash_token_transformer_layers_1_32"
-TEST_ENDPOINT = "mistral_slash_token_embedding_plus_layers_1_31_project_compatible"
+TEST_ENDPOINT = TRAINING_ENDPOINT
 CANONICAL_RANK_K_VALUES = (1, 3, 5, 10, 15, 20, 25, 30)
 
 
@@ -52,7 +52,7 @@ def mistral_extract(phase):
                     output_hidden_states=True, return_dict=True,
                 )
             row_ids = torch.arange(input_ids.shape[0], device=device)
-            layers = outputs.hidden_states[:-1] if phase == "test" else outputs.hidden_states[1:]
+            layers = outputs.hidden_states[1:]
             states = torch.stack([layer[row_ids, targets, :] for layer in layers], dim=1)
             chunks.append(states.detach().to(device="cpu", dtype=torch.float16))
         return torch.cat(chunks, dim=0)
@@ -64,7 +64,7 @@ def extract_trainset_hiddenstates(
     rebuild_cache=False, force_rebuild_cache=False, k=10,
 ):
     protocol = FeatureProtocol(
-        "mistral", "Mistral-7b-instruct-v0.2", ATTACK_FILES,
+        "mistral", "mistral_7b", ATTACK_FILES,
         benign_train_set_list, malicious_train_set_list,
         TRAINING_ENDPOINT, TEST_ENDPOINT,
         training_line_reader=read_mistral_training_lines,
