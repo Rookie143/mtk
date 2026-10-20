@@ -10,15 +10,15 @@ from pathlib import Path
 
 
 BENIGN_SOURCES = [
-    ("llm/datasets/train_data/databricks-dolly-15k.txt", 300),
-    ("llm/datasets/train_data/alpaca.txt", 300),
-    ("llm/datasets/train_data/non_refusal_prompts_with_responses_80k.txt", 200),
+    ("llm/datasets/reference_bank_data/databricks-dolly-15k.txt", 300),
+    ("llm/datasets/reference_bank_data/alpaca.txt", 300),
+    ("llm/datasets/reference_bank_data/non_refusal_prompts_with_responses_80k.txt", 200),
 ]
 
 MALICIOUS_SOURCES = [
-    ("llm/datasets/train_data/AdvBench.txt", 100),
-    ("llm/datasets/train_data/MaliciousInstruct.txt", 100),
-    ("llm/datasets/train_data/PKU-SafeRLHF-prompts_3-6k.txt", 600),
+    ("llm/datasets/reference_bank_data/AdvBench.txt", 100),
+    ("llm/datasets/reference_bank_data/MaliciousInstruct.txt", 100),
+    ("llm/datasets/reference_bank_data/PKU-SafeRLHF-prompts_3-6k.txt", 600),
 ]
 
 

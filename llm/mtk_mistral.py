@@ -100,14 +100,14 @@ def main(argv=None):
     report_dir.mkdir(parents=True, exist_ok=True)
     benign_train_set_list, malicious_train_set_list = get_train_dataset(
         [
-            ("datasets/train_data/databricks-dolly-15k.txt", 300),
-            ("datasets/train_data/alpaca.txt", 300),
-            ("datasets/train_data/non_refusal_prompts_with_responses_80k.txt", 200),
+            ("datasets/reference_bank_data/databricks-dolly-15k.txt", 300),
+            ("datasets/reference_bank_data/alpaca.txt", 300),
+            ("datasets/reference_bank_data/non_refusal_prompts_with_responses_80k.txt", 200),
         ],
         [
-            ("datasets/train_data/AdvBench.txt", 100),
-            ("datasets/train_data/MaliciousInstruct.txt", 100),
-            ("datasets/train_data/PKU-SafeRLHF-prompts_3-6k.txt", 600),
+            ("datasets/reference_bank_data/AdvBench.txt", 100),
+            ("datasets/reference_bank_data/MaliciousInstruct.txt", 100),
+            ("datasets/reference_bank_data/PKU-SafeRLHF-prompts_3-6k.txt", 600),
         ],
     )
     attack_file_path_list = list_available_attacks(ATTACK_DIR)
