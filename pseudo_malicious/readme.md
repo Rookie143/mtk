@@ -11,8 +11,8 @@
   - `AdvBench.txt`
   - `MaliciousInstruct.txt`
   - `PKU-SafeRLHF-prompts_3-6k.txt`
-- The test data files are  in `llm/datasets/reference_bank_data/non_refusal_prompts_with_responses_80k.txt` and `llm/datasets/llam2/nanogcg_1.json`.
-- To ensure that the pseudo-malicious prompts used to construct the reference bank do not overlap with those used for testing, we separately selected a set of non-overlapping prompts for reference bank construction. These prompts are stored in dataset/reference_bank_pmp_samples.txt in the current directory.
+- The test data files are  in `llm/datasets/reference_bank_data/non_refusal_prompts_with_responses_80k.txt` and `llm/datasets/llama2_test/nanogcg_1.json`.
+- To ensure that the pseudo-malicious prompts used to construct the reference bank do not overlap with those used for testing, we separately selected a set of non-overlapping prompts for reference bank construction. These prompts are stored in `datasets/reference_bank_pmp_samples.txt` in the current directory.
 
 The model and training data paths above are relative to the repository root.
 

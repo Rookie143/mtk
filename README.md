@@ -67,14 +67,14 @@ pip install -e ./adaptive_attack
 
 #### Training Datasets
 
-| Dataset | Repository Path | Role |
-| --- | --- | --- |
-| [Alpaca](https://huggingface.co/datasets/gbharti/finance-alpaca) | `llm/datasets/train_data` | Benign |
-| [Databricks-Dolly-15k](https://huggingface.co/datasets/databricks/databricks-dolly-15k) | `llm/datasets/train_data` | Benign |
-| [OR-Bench](https://huggingface.co/datasets/bench-llm/or-bench) | `llm/datasets/train_data` | Benign / Pseudo-Malicious |
-| [MaliciousInstruct](https://huggingface.co/datasets/walledai/MaliciousInstruct) | `llm/datasets/train_data` | Malicious |
-| [AdvBench](https://github.com/llm-attacks/llm-attacks/tree/main/data/advbench) | `llm/datasets/train_data` | Malicious |
-| [PKU-SafeRLHF](https://huggingface.co/datasets/PKU-Alignment/PKU-SafeRLHF) | `llm/datasets/train_data` | Malicious |
+| Dataset | Repository Path                    | Role |
+| --- |------------------------------------| --- |
+| [Alpaca](https://huggingface.co/datasets/gbharti/finance-alpaca) | `llm/datasets/reference_bank_data`          | Benign |
+| [Databricks-Dolly-15k](https://huggingface.co/datasets/databricks/databricks-dolly-15k) | `llm/datasets/reference_bank_data` | Benign |
+| [OR-Bench](https://huggingface.co/datasets/bench-llm/or-bench) | `llm/datasets/reference_bank_data`          | Benign / Pseudo-Malicious |
+| [MaliciousInstruct](https://huggingface.co/datasets/walledai/MaliciousInstruct) | `llm/datasets/reference_bank_data`          | Malicious |
+| [AdvBench](https://github.com/llm-attacks/llm-attacks/tree/main/data/advbench) | `llm/datasets/reference_bank_data`          | Malicious |
+| [PKU-SafeRLHF](https://huggingface.co/datasets/PKU-Alignment/PKU-SafeRLHF) | `llm/datasets/reference_bank_data`          | Malicious |
 
 > All LLM training datasets are stored in unified `.txt` format.
 
