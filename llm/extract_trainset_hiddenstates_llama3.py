@@ -6,7 +6,7 @@ import torch
 from feature_protocol import FeatureProtocol, native_extract, set_determinism
 
 
-ATTACK_FILES = ["JailJudge_1.json", "ijp_1.json", "nanogcg_1.json", "autodan_1.json", "drattack_1.json", "pair_1.json", "pap_gpt3.5_1.json", "pap_gpt4_1.json", "pap_llama2_1.json", "saa_1.json", "tap_1.json", "zulu_1.json"]
+ATTACK_FILES = ["JailJudge_1.json", "ijp_1.json", "nanogcg_1.json", "autodan_1.json", "drattack_1.json", "pair_1.json", "pap_1.json", "saa_1.json", "tap_1.json", "zulu_1.json"]
 
 
 def extract_trainset_hiddenstates(

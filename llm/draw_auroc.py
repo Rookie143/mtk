@@ -27,6 +27,7 @@ _ATTACK_NAME_MAP = {
     "nanogcg": "GCG",
     "nonagcg": "GCG",
     "pair": "PAIR",
+    "pap": "PAP",
     "saa": "SAA",
     "tap": "TAP",
     "zulu": "Zulu",
@@ -51,7 +52,7 @@ def _canonicalize_results(raw_results):
         for name in _PAP_VARIANTS
         if name in raw_results
     ]
-    if pap_values:
+    if pap_values and "PAP" not in canonical:
         canonical["PAP"] = sum(pap_values) / len(pap_values)
 
     missing = [name for name in CANONICAL_ATTACK_ORDER if name not in canonical]
@@ -103,7 +104,6 @@ def evaluate_attack_auroc(exp_dir, test_dict_name):
                 f"Failed to evaluate {file_path}"
             ) from error
 
-    # Preserve the per-file measurements for auditing/debugging.
     raw_df = pd.DataFrame(
         sorted(raw_results.items()),
         columns=["Attack File", "AUROC"],
@@ -115,8 +115,6 @@ def evaluate_attack_auroc(exp_dir, test_dict_name):
         float_format="%.6f",
     )
 
-    # Paper-facing summary: exactly 10 attack families in a fixed order.
-    # PAP is the equal-weight mean of its GPT-3.5, GPT-4, and Llama-2 variants.
     canonical = _canonicalize_results(raw_results)
     average = sum(canonical.values()) / len(canonical)
 

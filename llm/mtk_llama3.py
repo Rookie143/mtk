@@ -92,10 +92,7 @@ def eval(attack_file_path_list, detector, seed, report_dir):
 
 def main(argv=None):
     args = parse_args(argv)
-    setting = (
-        f"seed-{args.seed}_k-{args.k}_"
-        f"trees-{args.n_estimators}_samples-{args.max_samples}"
-    )
+    setting = f"seed-{args.seed}"
     report_dir = args.output_dir.resolve() / setting / "report"
     report_dir.mkdir(parents=True, exist_ok=True)
     benign_train_set_list, malicious_train_set_list = get_train_dataset(

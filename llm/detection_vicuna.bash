@@ -1,13 +1,7 @@
-#!/usr/bin/env bash
 set -euo pipefail
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-exec python "$script_dir/mtk_vicuna.py" \
-    --seed 56 \
-    --colon-k 10 \
-    --colon-n-estimators 500 \
-    --colon-max-samples 512 \
-    --ist-k 10 \
-    --ist-n-estimators 500 \
-    --ist-max-samples 512 \
-    --device cuda:0 \
-    "$@"
+export PYTHONDONTWRITEBYTECODE=1
+export OMP_NUM_THREADS=2
+export MKL_NUM_THREADS=2
+export TOKENIZERS_PARALLELISM=false
+exec python "$script_dir/mtk_vicuna.py" "$@"

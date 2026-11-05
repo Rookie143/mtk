@@ -1,15 +1,11 @@
-from contextlib import redirect_stderr, redirect_stdout
-import os
-
 import torch
 
-from feature_protocol import FeatureProtocol, render_prompts, set_determinism
+from feature_protocol import FeatureProtocol, load_records, method_name, rank_features, render_prompts, set_determinism
 
 
-ATTACK_FILES = ["JailJudge_all_1.json", "ijp_1.json", "nonagcg_1.json", "autodan_1.json", "drattack_1.json", "pair_1.json", "pap_gpt3.5_1.json", "pap_gpt4_1.json", "pap_llama2_1.json", "saa_1.json", "tap_1.json", "zulu_1.json"]
-TRAINING_ENDPOINT = "mistral_slash_token_transformer_layers_1_32"
+ATTACK_FILES = ["JailJudge_all_1.json", "ijp_1.json", "nonagcg_1.json", "autodan_1.json", "drattack_1.json", "pair_1.json", "pap_1.json", "saa_1.json", "tap_1.json", "zulu_1.json"]
+TRAINING_ENDPOINT = "mistral_trimmed_inst_slash_minus1_transformer_layers_1_32"
 TEST_ENDPOINT = TRAINING_ENDPOINT
-CANONICAL_RANK_K_VALUES = (1, 3, 5, 10, 15, 20, 25, 30)
 
 
 def read_mistral_training_lines(path):
@@ -20,24 +16,14 @@ def read_mistral_training_lines(path):
     return rows
 
 
-def endpoint_indices(tokenizer, input_ids, attention_mask):
-    targets = []
-    for row in range(input_ids.shape[0]):
-        valid = torch.nonzero(attention_mask[row], as_tuple=True)[0]
-        target = int(valid[-1])
-        token = tokenizer.decode([int(input_ids[row, target])])
-        while target > 0 and ("INST" in token or "]" in token):
-            target -= 1
-            token = tokenizer.decode([int(input_ids[row, target])])
-        targets.append(target)
-    return torch.tensor(targets, dtype=torch.long, device=input_ids.device)
-
-
 def mistral_extract(phase):
     def extract(model, tokenizer, prompts, batch_size, device):
         chunks = []
         max_length = min(int(getattr(model.config, "max_position_embeddings", 4096)), 4096)
+        tokenizer.chat_template = tokenizer.chat_template.replace("' [/INST]'", "' [/'")
         rendered = render_prompts(tokenizer, prompts)
+        if any(not text.endswith(" [/") for text in rendered):
+            raise ValueError("Expected Mistral template ending in [/")
         for start in range(0, len(rendered), batch_size):
             encoded = tokenizer(
                 rendered[start:start + batch_size], padding=True, truncation=True,
@@ -45,47 +31,69 @@ def mistral_extract(phase):
             )
             input_ids = encoded.input_ids.to(device)
             attention_mask = encoded.attention_mask.to(device)
-            targets = endpoint_indices(tokenizer, input_ids, attention_mask)
-            with torch.inference_mode():
-                outputs = model(
-                    input_ids=input_ids, attention_mask=attention_mask,
-                    output_hidden_states=True, return_dict=True,
-                )
-            row_ids = torch.arange(input_ids.shape[0], device=device)
-            layers = outputs.hidden_states[1:]
-            states = torch.stack([layer[row_ids, targets, :] for layer in layers], dim=1)
+            if not bool(attention_mask[:, -1].all()) or any(tokenizer.decode([int(token)]) != "/" for token in input_ids[:, -1]):
+                raise ValueError("Expected final / token at -1; check tokenization or truncation")
+            layers = []
+            def capture(module, inputs, output):
+                layer = output[0] if isinstance(output, tuple) else output
+                layers.append(layer[:, -1, :].detach().clone())
+            handles = [layer.register_forward_hook(capture) for layer in model.model.layers[:-1]]
+            handles.append(model.model.norm.register_forward_hook(capture))
+            try:
+                with torch.inference_mode():
+                    model.model(
+                        input_ids=input_ids, attention_mask=attention_mask,
+                        output_hidden_states=False, use_cache=False, return_dict=True,
+                    )
+            finally:
+                for handle in handles:
+                    handle.remove()
+            states = torch.stack(layers, dim=1)
             chunks.append(states.detach().to(device="cpu", dtype=torch.float16))
+            if start % (batch_size * 50) == 0 or start + batch_size >= len(rendered):
+                print(f"Mistral {phase} / (-1) features {min(start + batch_size, len(rendered))}/{len(rendered)}", flush=True)
         return torch.cat(chunks, dim=0)
     return extract
 
 
 def extract_trainset_hiddenstates(
     seed, device, dtype, batch_size, benign_train_set_list, malicious_train_set_list,
-    rebuild_cache=False, force_rebuild_cache=False, k=10,
+    k=10,
 ):
     protocol = FeatureProtocol(
         "mistral", "mistral_7b", ATTACK_FILES,
         benign_train_set_list, malicious_train_set_list,
         TRAINING_ENDPOINT, TEST_ENDPOINT,
         training_line_reader=read_mistral_training_lines,
-        rank_k_values=CANONICAL_RANK_K_VALUES,
     )
     set_determinism(42)
-    rank_path = protocol.rank_cache_path(seed, k)
-    saved = None
-    if not force_rebuild_cache and not rebuild_cache:
-        saved = protocol.load_rank_cache(seed, dtype, k)
-        if saved is not None:
-            return saved
-    if saved is None:
-        with open(os.devnull, "w", encoding="utf-8") as sink:
-            with redirect_stdout(sink), redirect_stderr(sink):
-                model, tokenizer = protocol.model_and_tokenizer(device, dtype)
-                protocol.prepare_test_features(device, dtype, batch_size, force_rebuild_cache, model, tokenizer, mistral_extract("test"))
-                training_path = protocol.prepare_training_features(seed, device, dtype, batch_size, force_rebuild_cache, model, tokenizer, mistral_extract("training"))
-                protocol.prepare_ranks(seed, device, k)
-                training_path.unlink(missing_ok=True)
-        del model, tokenizer
-    saved = torch.load(rank_path, map_location="cpu", weights_only=False)
+    model, tokenizer = protocol.model_and_tokenizer(device, dtype)
+    datasets, prompts = {}, []
+    for path in [protocol.benign_test] + protocol.attack_files:
+        records = load_records(path)
+        datasets[method_name(path)] = {
+            "start": len(prompts), "source_indices": [row["source_index"] for row in records],
+        }
+        prompts.extend(row["prompt"] for row in records)
+    features = mistral_extract("test")(model, tokenizer, prompts, batch_size, device)
+    selected, rows = protocol.selected_test(seed, {"datasets": datasets, "features": features})
+    del features
+    benign, malicious, sources = protocol.sample_training(seed)
+    background = mistral_extract("training")(model, tokenizer, benign + malicious, batch_size, device)
+    del model, tokenizer
+    if device.startswith("cuda"):
+        torch.cuda.empty_cache()
+    labels = torch.tensor([0] * len(benign) + [1] * len(malicious))
+    k_values = (k,)
+    saved = {
+        "manifest": {
+            "seed": seed, "k_values": list(k_values), "sample_rows": rows,
+            "training_manifest": protocol.training_manifest(seed, sources, dtype),
+            "test_manifest": protocol.test_manifest(dtype),
+        },
+        "labels": labels,
+        "train_ranks": rank_features(background, background, labels, k_values, device, True),
+        "test_ranks": rank_features(selected, background, labels, k_values, device, False),
+    }
     protocol.validate_rank(saved, seed, dtype, k)
     return saved

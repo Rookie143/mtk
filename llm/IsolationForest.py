@@ -32,7 +32,6 @@ def _average_path_length(n_samples_leaf):
 
 
 class PyTorchIsolationForest(nn.Module):
-    """Compatibility-preserving copy of MTK's custom Isolation Forest."""
 
     def __init__(
         self,
@@ -68,8 +67,6 @@ class PyTorchIsolationForest(nn.Module):
         self.random_state_ = check_random_state(random_state)
 
     def _check_fitted(self):
-        # Do not use sklearn.check_is_fitted here.  This class intentionally is
-        # a torch Module, not a scikit-learn BaseEstimator.
         if self.max_samples_ is None or self.offset_ is None or not self.estimators_:
             raise RuntimeError("PyTorchIsolationForest is not fitted")
 
@@ -128,8 +125,6 @@ class PyTorchIsolationForest(nn.Module):
         if self.contamination == "auto":
             self.offset_ = -0.5
         else:
-            # score_samples checks fitted state; all trees are available now,
-            # so use a temporary offset while deriving the requested quantile.
             self.offset_ = 0.0
             scores = self.score_samples(X)
             self.offset_ = np.percentile(
@@ -148,7 +143,9 @@ class PyTorchIsolationForest(nn.Module):
         while queue:
             node = queue.pop(0)
             depth, node_id = node["depth"], node["node_id"]
-            count = n_samples if node_id == 0 else node["sample_count"]
+            mask = (torch.ones(n_samples, dtype=torch.bool, device=X.device)
+                    if node_id == 0 else node["parent_mask"])
+            count = int(mask.sum())
             node_samples.append(count)
             node_depths.append(depth)
             if count <= 1 or depth >= max_depth:
@@ -162,26 +159,31 @@ class PyTorchIsolationForest(nn.Module):
                 feature = self.random_state_.choice(self.n_features_in_)
             node["feature"] = feature
             values = X[:, feature]
-            unique = torch.unique(values)
+            unique = torch.unique(values[mask])
             if len(unique) == 1:
                 node["is_leaf"] = True
                 continue
             if len(unique) == 2:
-                split = (unique[0] + unique[1]) / 2
+                lower, upper = unique[0], unique[1]
             else:
                 pos = self.random_state_.choice(len(unique) - 1)
-                split = (unique[pos] + unique[pos + 1]) / 2
+                lower, upper = unique[pos], unique[pos + 1]
+            split = (lower + upper) / 2
+            if not bool(torch.isfinite(split)) or not bool((split > lower) & (split <= upper)):
+                split = upper
             node["threshold"] = split.item()
-            if node_id == 0:
-                left_mask = values < split
-            else:
-                left_mask = node["parent_mask"] & (values < split)
-            right_mask = (torch.ones_like(left_mask) if node_id == 0 else node["parent_mask"]) & ~left_mask
-            for side, mask in (("left", left_mask), ("right", right_mask)):
+            left_mask = mask & (values < split)
+            right_mask = mask & ~left_mask
+            left_count, right_count = int(left_mask.sum()), int(right_mask.sum())
+            if left_count == 0 or right_count == 0:
+                raise RuntimeError("Node-local split produced an empty branch")
+            for side, child_mask, child_count in (
+                ("left", left_mask, left_count), ("right", right_mask, right_count),
+            ):
                 child = {
                     "left": None, "right": None, "feature": None, "threshold": None,
                     "is_leaf": False, "node_id": next_id, "depth": depth + 1,
-                    "sample_count": mask.sum().item(), "parent_mask": mask,
+                    "sample_count": child_count, "parent_mask": child_mask,
                 }
                 next_id += 1
                 node[side] = child
@@ -208,7 +210,6 @@ class PyTorchIsolationForest(nn.Module):
         )
 
     def _compile_trees(self, device):
-        """Compile the existing Python trees for equivalent parallel traversal."""
         tree_count = len(self.estimators_)
         max_nodes = max(len(tree["node_depths"]) for tree in self.estimators_)
         feature = torch.zeros((tree_count, max_nodes), dtype=torch.long, device=device)
@@ -229,7 +230,6 @@ class PyTorchIsolationForest(nn.Module):
                 if not node["is_leaf"]:
                     original_feature = node["feature"]
                     if len(selected_features) < self.n_features_in_:
-                        # Match _apply_tree's historical feature-position rule.
                         positions = torch.where(selected_features == original_feature)[0]
                         feature[tree_index, node_id] = positions[0] if len(positions) else 0
                     else:
@@ -316,7 +316,6 @@ class PyTorchIsolationForest(nn.Module):
         return -(2.0 ** (-normalized))
 
     def _score_samples_scalar(self, X):
-        """Original traversal retained as an equivalence oracle for tests."""
         self._check_fitted()
         if not isinstance(X, torch.Tensor):
             X = torch.as_tensor(X, dtype=torch.float32)

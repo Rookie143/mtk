@@ -25,8 +25,6 @@ def parse_args(argv=None):
     parser.add_argument("--dtype", choices=("float16", "bfloat16", "float32"), default="float16")
     parser.add_argument("--batch-size", type=int, default=8)
     parser.add_argument("--output-dir", type=Path, default=HERE / "results" / MODEL)
-    parser.add_argument("--rebuild-cache", action="store_true")
-    parser.add_argument("--force-rebuild-cache", action="store_true")
     args = parser.parse_args(argv)
     if min(args.k, args.n_estimators, args.max_samples, args.batch_size) < 1:
         parser.error("k, n-estimators, max-samples, and batch-size must be positive")
@@ -92,10 +90,7 @@ def eval(attack_file_path_list, detector, seed, report_dir):
 
 def main(argv=None):
     args = parse_args(argv)
-    setting = (
-        f"seed-{args.seed}_k-{args.k}_"
-        f"trees-{args.n_estimators}_samples-{args.max_samples}"
-    )
+    setting = f"seed-{args.seed}"
     report_dir = args.output_dir.resolve() / setting / "report"
     report_dir.mkdir(parents=True, exist_ok=True)
     benign_train_set_list, malicious_train_set_list = get_train_dataset(
@@ -114,7 +109,7 @@ def main(argv=None):
     rank_data = extract_trainset_hiddenstates(
         args.seed, args.device, args.dtype, args.batch_size,
         benign_train_set_list, malicious_train_set_list,
-        args.rebuild_cache, args.force_rebuild_cache, k=args.k,
+        k=args.k,
     )
     detector = JailbreakDetector(
         rank_data=rank_data,

@@ -27,3 +27,20 @@ python pseudo_malicious.py
 ```
 
 The program performs data sampling, feature extraction, detector training, and evaluation. Results are saved to `results/results.csv` under this directory, including the attack detection rate (`tpr`), false positive rate on ordinary benign prompts (`fpr`), false positive rate on PMP (`pmp_fpr`), and F1 score (`f1`). Running the program again overwrites the result file.
+
+
+## Checking Pseudo Malicious Prompts with `test_pseudo_malicious.py`
+
+This script is used to determine whether a prompt is a pseudo-malicious prompt.
+
+
+You can run this script using the following command:
+```bash
+CUDA_VISIBLE_DEVICES=3 python -u test_pseudo_malicious.py \
+  --model ../llm/model/llama2 \
+  --data ../llm/datasets/reference_bank_data/non_refusal_prompts_with_responses_80k.txt \
+  --device cuda:0 \
+  --batch-size 4 \
+  --max-new-tokens 256 \
+  --output results/prefix_checks.jsonl
+```

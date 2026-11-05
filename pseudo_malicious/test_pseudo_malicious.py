@@ -28,8 +28,8 @@ def negative_prefix(response):
 
 def main():
     parser = argparse.ArgumentParser(description="Generate local Llama-2 replies and count negative response prefixes.")
-    parser.add_argument("--model", type=Path, default=ROOT / "llm/model/llama2_7b_chat_hf")
-    parser.add_argument("--data", type=Path, default=ROOT / "llm/datasets/reference_bank_data/non_refusal_prompts_with_responses_80k.txt")
+    parser.add_argument("--model", type=Path, default=ROOT / "../llm/model/llama2_7b")
+    parser.add_argument("--data", type=Path, default=ROOT / "../llm/datasets/reference_bank_data/non_refusal_prompts_with_responses_80k.txt")
     parser.add_argument("--output", type=Path, default=ROOT / "llama2_negative_starts.jsonl")
     parser.add_argument("--device", default="auto", help="auto, cpu, or cuda:N")
     parser.add_argument("--batch-size", type=int, default=4)
