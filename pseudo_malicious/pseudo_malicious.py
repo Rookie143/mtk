@@ -69,6 +69,7 @@ def rows_from_json(path):
         else:
             continue
         if isinstance(prompt, str) and prompt.strip():
+            row["prompt"] = prompt.strip()
             rows.append(row)
     if not rows:
         raise ValueError(f"No usable prompts in {path}")

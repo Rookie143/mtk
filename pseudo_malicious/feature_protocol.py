@@ -21,7 +21,7 @@ def set_determinism(seed):
 
 def read_lines(path):
     with path.open("r", encoding="utf-8", errors="ignore", newline="") as stream:
-        return [line for line in stream.readlines() if line.strip()]
+        return [line.strip() for line in stream.readlines() if line.strip()]
 
 
 def render_prompts(tokenizer, prompts):
