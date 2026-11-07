@@ -14,8 +14,7 @@
 - The test data files are  in `llm/datasets/reference_bank_data/non_refusal_prompts_with_responses_80k.txt`.
 - To ensure that the pseudo-malicious prompts used to construct the reference bank do not overlap with those used for testing, we separately selected a set of non-overlapping prompts for reference bank construction. These prompts are stored in `datasets/reference_bank_pmp_samples.txt` in the current directory.
 - To ensure that the GCG samples used for testing with distinct goals that do not overlap with AdvBench, we have placed the GCG test samples in `pseudo_malicious/datasets/gcg.json`.
-The model and training data paths above are relative to the repository root.
-
+- To prevent overlap with the reference bank and evaluation sets, we selected a separate pool of 500 Dolly prompts for threshold calibration.
 ## Running the Experiment
 
 From the repository root, enter this directory, install the dependencies provided in the `llm` directory, and run the entry script:
