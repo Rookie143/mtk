@@ -11,9 +11,9 @@
   - `AdvBench.txt`
   - `MaliciousInstruct.txt`
   - `PKU-SafeRLHF-prompts_3-6k.txt`
-- The test data files are  in `llm/datasets/reference_bank_data/non_refusal_prompts_with_responses_80k.txt` and `llm/datasets/llama2_test/nanogcg_1.json`.
+- The test data files are  in `llm/datasets/reference_bank_data/non_refusal_prompts_with_responses_80k.txt`.
 - To ensure that the pseudo-malicious prompts used to construct the reference bank do not overlap with those used for testing, we separately selected a set of non-overlapping prompts for reference bank construction. These prompts are stored in `datasets/reference_bank_pmp_samples.txt` in the current directory.
-
+- To ensure that the GCG samples used for testing do not overlap with those in AdvBench, we have placed the GCG test samples in `pseudo_malicious/datasets/gcg.json`.
 The model and training data paths above are relative to the repository root.
 
 ## Running the Experiment
@@ -26,7 +26,7 @@ python -m pip install -r ../llm/requirements.txt
 python pseudo_malicious.py
 ```
 
-The program performs data sampling, feature extraction, detector training, and evaluation. Results are saved to `results/results.csv` under this directory, including the attack detection rate (`tpr`), false positive rate on ordinary benign prompts (`fpr`), false positive rate on PMP (`pmp_fpr`), and F1 score (`f1`). Running the program again overwrites the result file.
+The program performs data sampling, feature extraction, detector training, and evaluation. Results are saved to `results/results.csv` under this directory, including the attack detection rate (`tpr`), false positive rate on ordinary benign prompts (`fpr`), false positive rate on PMP (`pmp_fpr`), and F1 score (`F1_PMP`). 
 
 
 ## Checking Pseudo Malicious Prompts with `test_pseudo_malicious_prompts.py`
